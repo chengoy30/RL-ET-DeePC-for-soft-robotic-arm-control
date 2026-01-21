@@ -45,7 +45,7 @@ if __name__ == "__main__":
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)
 
-    num_episodes = 100
+    num_episodes = 200
     rho = 0.1
 
     param_deepc = load_data()

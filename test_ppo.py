@@ -10,8 +10,8 @@ from train_ppo import load_data
 import matplotlib.pyplot as plt
 from Lib.rl_utils import test_PPO_agent
 
-save_dir = "./saved_models"
-model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-01-21_11-00-14_best.pth")
+save_dir = "./Saved_Models"
+model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-01-21_14-57-20_best.pth")
 
 seed_number = 10
 random.seed(seed_number)
@@ -43,7 +43,7 @@ circular_trajectory = generate_circular_trajectory(
 
 y_desired = circular_trajectory.T
 
-env = SoftArmEnv(param_deepc, arm_section, y_desired, rho=0.01)
+env = SoftArmEnv(param_deepc, arm_section, y_desired, rho)
 state, _ = env.reset(seed=seed_number)
 state_dim = env.observation_space.shape[0]
 action_dim = env.action_space.n
@@ -65,14 +65,12 @@ agent = PPO(state_dim, hidden_dim, action_dim, actor_lr, critic_lr, lmbda,
 agent.load_model(model_path)
 
 print("\n===== start testing =====")
-# test_PPO_agent 现在返回5个值：observations, actions, rewards, y_actual, y_target
 test_observations, test_actions, test_rewards, test_y_actual, test_y_target = test_PPO_agent(env, agent, num_episodes=1)
 
 obs_data = test_observations[0]
 action_data = test_actions[0]
 reward_data = test_rewards[0]
 
-# 直接使用返回的实际位置和目标位置数据
 y_actual = test_y_actual[0]
 y_target = test_y_target[0]
 
@@ -99,10 +97,8 @@ for i, (ax, label, color) in enumerate(zip(axes1, labels, colors)):
 axes1[2].set_xlabel('time step', fontsize=12)
 fig1.suptitle('PPO test - Observation (position) results', fontsize=14, fontweight='bold')
 plt.tight_layout()
-plt.savefig('observation_results.png', dpi=150, bbox_inches='tight')
+plt.savefig('./Figure/ppo_observation_results.png', dpi=150, bbox_inches='tight')
 plt.show()
-
-print("observation results saved to: observation_results.png")
 
 fig2, axes2 = plt.subplots(2, 1, figsize=(12, 6))
 
@@ -128,7 +124,7 @@ wedges, texts, autotexts = ax_pie.pie(action_counts, explode=explode, labels=lab
                                        shadow=True, startangle=90)
 
 plt.tight_layout()
-plt.savefig('action_results.png', dpi=150, bbox_inches='tight')
+plt.savefig('./Figure/ppo_action_results.png', dpi=150, bbox_inches='tight')
 plt.show()
 
 from mpl_toolkits.mplot3d import Axes3D
@@ -150,7 +146,5 @@ ax3d.legend(loc='upper left', fontsize=10)
 ax3d.view_init(elev=20, azim=45)
 
 plt.tight_layout()
-plt.savefig('trajectory_3d.png', dpi=150, bbox_inches='tight')
+plt.savefig('./Figure/ppo_trajectory_3d.png', dpi=150, bbox_inches='tight')
 plt.show()
-
-

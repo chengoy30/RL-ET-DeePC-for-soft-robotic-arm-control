@@ -38,12 +38,11 @@ class PPO:
                                                  lr=critic_lr)
         self.gamma = gamma
         self.lmbda = lmbda
-        self.epochs = epochs  # 一条序列的数据用来训练轮数
-        self.eps = eps  # PPO中截断范围的参数
+        self.epochs = epochs
+        self.eps = eps
         self.device = device
 
     def take_action(self, state):
-        # 先将 state 转换为 numpy 数组，再创建 tensor，避免从 numpy 数组列表创建 tensor 的性能问题
         state = torch.tensor(np.array([state]), dtype=torch.float).to(self.device)
         probs = self.actor(state)
         action_dist = torch.distributions.Categorical(probs)
@@ -51,7 +50,6 @@ class PPO:
         return action.item()
 
     def update(self, transition_dict):
-        # 先将列表转换为 numpy 数组，避免从 numpy 数组列表创建 tensor 的性能问题
         states = torch.tensor(np.array(transition_dict['states']),
                               dtype=torch.float).to(self.device)
         actions = torch.tensor(transition_dict['actions']).view(-1, 1).to(
@@ -75,8 +73,8 @@ class PPO:
             ratio = torch.exp(log_probs - old_log_probs)
             surr1 = ratio * advantage
             surr2 = torch.clamp(ratio, 1 - self.eps,
-                                1 + self.eps) * advantage  # 截断
-            actor_loss = torch.mean(-torch.min(surr1, surr2))  # PPO损失函数
+                                1 + self.eps) * advantage
+            actor_loss = torch.mean(-torch.min(surr1, surr2))
             critic_loss = torch.mean(
                 F.mse_loss(self.critic(states), td_target.detach()))
             self.actor_optimizer.zero_grad()
