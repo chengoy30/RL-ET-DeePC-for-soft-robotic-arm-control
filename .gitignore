@@ -1,0 +1,7 @@
+# 忽略所有 __pycache__ 文件夹（包括主目录和子目录）
+**/__pycache__/
+
+# 忽略 Figure 文件夹中的所有内容
+Figure/*
+# 但保留 .gitkeep 文件以保持空文件夹
+!Figure/.gitkeep
