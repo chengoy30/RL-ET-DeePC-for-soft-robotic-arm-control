@@ -38,7 +38,7 @@ class SoftArmEnv:
         self.uini = np.zeros((m_ctr, self.Tini))
         self.uini_copy = self.uini.copy()
         self.yini = np.zeros((p_ctr, self.Tini))
-        self.yini[2, :] = -90.0
+        self.yini[2, :] = -arm_section.L * 10.0
         self.yini_copy = self.yini.copy()
         
         y_des_arr = np.array(y_desired)
@@ -54,24 +54,19 @@ class SoftArmEnv:
 
         self.m = self.Up.shape[0] // self.Tini
         self.p = self.Yp.shape[0] // self.Tini
-        self.y = np.array([[0], [0], [-90]])
+        self.y = np.array([[0], [0], [-93.0]])
         self.rho = rho
         self.arm_section = arm_section
 
-        # 步进电机参数：用于将步数 u 转换为绳索长度 l
-        self.pulley_diameter = 10  # 滑轮直径，单位：mm
-        self.steps_per_rev = 3200  # 每转步数
-        self.circumference = self.pulley_diameter * np.pi  # 滑轮周长，单位：mm
-        self.mm_per_step = self.circumference / self.steps_per_rev  # 每步移动距离，单位：mm
+        self.pulley_diameter = 10
+        self.steps_per_rev = 3200
+        self.circumference = self.pulley_diameter * np.pi
+        self.mm_per_step = self.circumference / self.steps_per_rev
 
         self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self.p,))
         self.action_space = gym.spaces.Discrete(2)
         
         self._rng = np.random.default_rng(seed=None)
-        
-        # 用于存储上一次的正向运动学结果，当求解失败时使用
-        self.kappa_b_last = 0.0  # 默认曲率为0（直臂状态）
-        self.gamma_g_rad_last = 0.0  # 默认旋转角为0
         
     def connect(self):
         pass
@@ -89,15 +84,14 @@ class SoftArmEnv:
         self.useq = np.zeros((self.m, self.N))
         self.yseq = np.zeros((self.p, self.N))
         self.t = 0
-        self.y = np.array([[0], [0], [-90]])
-        # 重置正向运动学的上一次值
-        self.kappa_b_last = 0.0
-        self.gamma_g_rad_last = 0.0
+        self.y = np.array([[0], [0], [-93.0]])
         initial_target = self.y_desired[:, 0]
         return self.getFeat(initial_target), {}
     
     def getFeat(self, current_target):
-        return (current_target.flatten() - self.y.flatten())
+        error = current_target.flatten() - self.y.flatten()
+        error_norm = np.linalg.norm(error)
+        return np.append(error, error_norm)
 
     def step(self, action):
         if action > 0:
@@ -115,44 +109,23 @@ class SoftArmEnv:
         else:
             self.k += 1
 
-
-        # 步进电机只能取整数步数，对控制输入进行取整
         u_applied = np.round(self.useq[:, self.k]).astype(int)
         
-        # 将步进电机步数 u 转换为绳索长度 l_known_vec
-        # 公式：l = L - (u * mm_per_step / 10.0)，其中 /10.0 是将 mm 转换为 cm
         l_known_vec = self.arm_section.L - (u_applied * self.mm_per_step / 10.0)
         
-        # 限制绳索长度在物理可行的范围内
-        # 最小长度：约为自然长度的 70%（防止过度收缩）
-        # 最大长度：约为自然长度的 115%（防止过度伸长）
-        l_min = 0.70 * self.arm_section.L  # 约 6.51 cm
-        l_max = 1.15 * self.arm_section.L  # 约 10.70 cm
+        l_min = 0.70 * self.arm_section.L
+        l_max = 1.15 * self.arm_section.L
         l_known_vec = np.clip(l_known_vec, l_min, l_max)
         
-        # 使用绳索长度计算正向运动学，得到弯曲曲率和旋转角
         kappa_b, gamma_g_rad = self.arm_section.solve_forward_kinematics(l_known_vec)
         
-        # 如果正向运动学求解失败，使用上一次的值或默认值
-        if kappa_b is None or gamma_g_rad is None:
-            print(f"警告: 正向运动学求解失败 (步数 {self.t}), l = {l_known_vec}")
-            kappa_b = self.kappa_b_last
-            gamma_g_rad = self.gamma_g_rad_last
-        else:
-            # 更新上一次的值
-            self.kappa_b_last = kappa_b
-            self.gamma_g_rad_last = gamma_g_rad
-        
-        # 根据常曲率模型计算末端位置 (x, y, z)
-        # theta = kappa_b * L 是弯曲角度，phi = gamma_g_rad 是旋转角
-        theta = kappa_b * self.arm_section.L  # 弯曲角度
+        # theta = kappa_b * L 
+        theta = kappa_b * self.arm_section.L  
         x, y, z = constant_curvature(theta, gamma_g_rad, 10.0 * self.arm_section.L)
         
-        # 将末端位置组合成输出向量 y_plant
-        y_plant = np.array([[x], [y], [-z]])
-        
-        
-        self.y = y_plant
+        noise = self._rng.normal(0, 0.002, (3, 1))
+        self.y = np.array([[x], [y], [-z]]) + noise
+
         self.t += 1
         
         self.uini = np.column_stack([self.uini[:, 1:], self.useq[:, self.k].reshape(-1, 1)])

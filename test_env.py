@@ -79,7 +79,6 @@ if __name__ == "__main__":
     eps = 0.2
     device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
 
-    env_name = 'SoftArm-v0'
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
     agent = PPO(state_dim, hidden_dim, action_dim, actor_lr, critic_lr, lmbda, epochs, eps, gamma, device)
