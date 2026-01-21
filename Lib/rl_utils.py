@@ -248,3 +248,59 @@ def test_PPO_agent(env, agent, num_episodes=1):
         print(f"Episode {ep+1}: Total Reward = {sum(episode_rewards):.3f}, Steps = {len(episode_actions)}")
     
     return all_observations, all_actions, all_rewards, all_y_actual, all_y_target
+
+def test_DQN_agent(env, agent, num_episodes=1):
+    all_observations = []  # 存储所有observation
+    all_actions = []       # 存储所有action
+    all_rewards = []       # 存储所有reward
+    all_y_actual = []      # 存储实际输出 y
+    all_y_target = []      # 存储目标点 target
+    
+    for ep in range(num_episodes):
+        state, _ = env.reset()
+        done = False
+        
+        episode_obs = [state.copy()]  # 记录初始状态
+        episode_actions = []
+        episode_rewards = []
+        episode_y_actual = [env.y.flatten().copy()] 
+        initial_target = env.y_desired[:, 0]
+        episode_y_target = [initial_target.flatten().copy()] 
+
+        next_state, reward, terminated, truncated, _ = env.step(action=1)
+        episode_actions.append(1)  # 记录初始的action=1
+        episode_rewards.append(reward)
+        episode_obs.append(next_state.copy())
+        episode_y_actual.append(env.y.flatten().copy())
+        current_target = env.y_desired[:, min(env.t, env.y_desired.shape[1]-1)]
+        episode_y_target.append(current_target.flatten().copy())
+        state = next_state  
+        done = terminated or truncated
+        
+        while not done:
+            with torch.no_grad():
+                state_tensor = torch.tensor(np.array([state]), dtype=torch.float).to(agent.device)
+                action = agent.q_net(state_tensor).argmax().item()
+            
+            if env.k >= env.N - 1:
+                action = 1
+            
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+            
+            episode_obs.append(next_state.copy())
+            episode_actions.append(action)
+            episode_rewards.append(reward)
+            episode_y_actual.append(env.y.flatten().copy())
+            current_target = env.y_desired[:, min(env.t, env.y_desired.shape[1]-1)]
+            episode_y_target.append(current_target.flatten().copy())
+            state = next_state
+        
+        all_observations.append(np.array(episode_obs))
+        all_actions.append(np.array(episode_actions))
+        all_rewards.append(np.array(episode_rewards))
+        all_y_actual.append(np.array(episode_y_actual))
+        all_y_target.append(np.array(episode_y_target))
+        print(f"Episode {ep+1}: Total Reward = {sum(episode_rewards):.3f}, Steps = {len(episode_actions)}")
+    
+    return all_observations, all_actions, all_rewards, all_y_actual, all_y_target

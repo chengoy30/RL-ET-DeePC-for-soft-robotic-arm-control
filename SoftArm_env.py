@@ -31,7 +31,7 @@ class SoftArmEnv:
         if isinstance(y_desired, np.ndarray) and y_desired.ndim == 2:
             self.T = y_desired.shape[1]
         else:
-            self.T = 200  # default episode length
+            self.T = 200  
 
         m_ctr = int(param_deepc[2].shape[0] / self.N)
         p_ctr = int(param_deepc[3].shape[0] / self.N)
@@ -54,7 +54,10 @@ class SoftArmEnv:
 
         self.m = self.Up.shape[0] // self.Tini
         self.p = self.Yp.shape[0] // self.Tini
-        self.y = np.array([[0], [0], [-93.0]])
+        
+        self.y_init = np.array([[0], [0], [-arm_section.L * 10.0]])
+        self.y = self.y_init.copy()
+        
         self.rho = rho
         self.arm_section = arm_section
 
@@ -63,7 +66,12 @@ class SoftArmEnv:
         self.circumference = self.pulley_diameter * np.pi
         self.mm_per_step = self.circumference / self.steps_per_rev
 
-        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self.p,))
+        self.l_min = 0.70 * self.arm_section.L
+        self.l_max = 1.15 * self.arm_section.L
+        self.arm_length_mm = 10.0 * self.arm_section.L
+        self.Q_reward = 0.33 * np.eye(self.p) 
+
+        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self.p + 1,))
         self.action_space = gym.spaces.Discrete(2)
         
         self._rng = np.random.default_rng(seed=None)
@@ -84,7 +92,7 @@ class SoftArmEnv:
         self.useq = np.zeros((self.m, self.N))
         self.yseq = np.zeros((self.p, self.N))
         self.t = 0
-        self.y = np.array([[0], [0], [-93.0]])
+        self.y = self.y_init.copy() 
         initial_target = self.y_desired[:, 0]
         return self.getFeat(initial_target), {}
     
@@ -112,27 +120,27 @@ class SoftArmEnv:
         u_applied = np.round(self.useq[:, self.k]).astype(int)
         
         l_known_vec = self.arm_section.L - (u_applied * self.mm_per_step / 10.0)
-        
-        l_min = 0.70 * self.arm_section.L
-        l_max = 1.15 * self.arm_section.L
-        l_known_vec = np.clip(l_known_vec, l_min, l_max)
+        l_known_vec = np.clip(l_known_vec, self.l_min, self.l_max) 
         
         kappa_b, gamma_g_rad = self.arm_section.solve_forward_kinematics(l_known_vec)
         
         # theta = kappa_b * L 
         theta = kappa_b * self.arm_section.L  
-        x, y, z = constant_curvature(theta, gamma_g_rad, 10.0 * self.arm_section.L)
+        x, y, z = constant_curvature(theta, gamma_g_rad, self.arm_length_mm) 
         
         noise = self._rng.normal(0, 0.002, (3, 1))
         self.y = np.array([[x], [y], [-z]]) + noise
 
         self.t += 1
         
-        self.uini = np.column_stack([self.uini[:, 1:], self.useq[:, self.k].reshape(-1, 1)])
-        self.yini = np.column_stack([self.yini[:, 1:], self.y])
+        self.uini = np.roll(self.uini, -1, axis=1)
+        self.uini[:, -1] = self.useq[:, self.k]
+        
+        self.yini = np.roll(self.yini, -1, axis=1)
+        self.yini[:, -1] = self.y.flatten()
 
         current_target = self.y_desired[:, min(self.t, self.y_desired.shape[1]-1)]
-        reward = stagecost(self.y, current_target, Q = 0.33 * np.eye(self.p)) * (-1) - self.rho * action
+        reward = stagecost(self.y, current_target, Q=self.Q_reward) * (-1) - self.rho * action
         next_state = self.getFeat(current_target)
 
         # terminated: when reach the terminal state (task completed or failed)
@@ -145,4 +153,3 @@ class SoftArmEnv:
         terminated = False  # this environment has no early termination condition, only truncation
 
         return next_state, reward, terminated, truncated, {}
-        

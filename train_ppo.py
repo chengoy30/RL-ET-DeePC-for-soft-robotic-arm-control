@@ -44,6 +44,9 @@ if __name__ == "__main__":
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)
 
+    num_episodes = 200
+    rho = 0.5
+
     param_deepc = load_data()
     Tini = param_deepc[4]
     N = param_deepc[5]
@@ -67,7 +70,7 @@ if __name__ == "__main__":
 
     y_desired = circular_trajectory.T
 
-    env = SoftArmEnv(param_deepc, arm_section, y_desired, rho=0.01)
+    env = SoftArmEnv(param_deepc, arm_section, y_desired, rho)
     state, _ = env.reset(seed=seed_number)
 
     actor_lr = 1e-3
@@ -82,3 +85,58 @@ if __name__ == "__main__":
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
     agent = PPO(state_dim, hidden_dim, action_dim, actor_lr, critic_lr, lmbda, epochs, eps, gamma, device)
+
+    return_list, action_1_ratio_list, best_test_reward = rl_utils.train_PPO_agent(env, agent, num_episodes, rho)
+
+    episodes_list = list(range(len(return_list)))
+    episodes_list = list(range(len(return_list)))
+    plt.plot(episodes_list, return_list)
+    plt.xlabel('Episodes')
+    plt.ylabel('Returns')
+    plt.title('PPO on SoftArmEnv')
+    plt.show()
+
+    mv_return = rl_utils.moving_average(return_list, 9)
+    plt.plot(episodes_list, mv_return)
+    plt.xlabel('Episodes')
+    plt.ylabel('Returns')
+    plt.title('PPO on SoftArmEnv')
+    plt.show()
+    
+    # 绘制action=1比例变化曲线
+    plt.figure(figsize=(10, 6))
+    plt.plot(episodes_list, action_1_ratio_list, label='action=1 ratio', color='orange')
+    plt.xlabel('Episodes')
+    plt.ylabel('Action=1 Ratio')
+    plt.title('Action=1 ratio in each episode')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+    # 绘制移动平均后的action=1比例曲线
+    mv_action_1_ratio = rl_utils.moving_average(action_1_ratio_list, 9)
+    plt.figure(figsize=(10, 6))
+    plt.plot(episodes_list, mv_action_1_ratio, label='action=1 ratio (moving average)', color='green')
+    plt.xlabel('Episodes')
+    plt.ylabel('Action=1 Ratio (Moving Average)')
+    plt.title('Action=1 ratio in each episode (moving average)')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+    save_dir_training_data = "./saved_training_data"
+    os.makedirs(save_dir_training_data, exist_ok=True)
+    # 保存训练数据用于后续对比分析
+    current_time = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+    training_data_path = os.path.join(save_dir_training_data, f"training_data_rho_{rho}_{current_time}.npz")
+    np.savez(training_data_path,
+             return_list=np.array(return_list),
+             mv_return=np.array(mv_return),
+             action_1_ratio_list=np.array(action_1_ratio_list),
+             mv_action_1_ratio=np.array(mv_action_1_ratio),
+             episodes_list=np.array(episodes_list),
+             rho=rho,
+             num_episodes=num_episodes,
+             best_test_reward=best_test_reward,
+             seed_number=seed_number)
+    print(f"\n training data saved to: {training_data_path}")

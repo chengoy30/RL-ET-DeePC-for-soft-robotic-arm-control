@@ -84,6 +84,7 @@ if __name__ == "__main__":
     agent = PPO(state_dim, hidden_dim, action_dim, actor_lr, critic_lr, lmbda, epochs, eps, gamma, device)
 
     print("start testing the environment...")
+    time_start = time.time()
     state, _ = env.reset(seed=seed_number)
     
     rewards_list = []
@@ -110,6 +111,8 @@ if __name__ == "__main__":
         state = next_state
     
     print(f"testing completed! total steps: {step_count}, total reward: {sum(rewards_list):.4f}")
+    time_end = time.time()
+    print(f"testing time: {time_end - time_start:.2f} seconds")
     
     rewards_array = np.array(rewards_list)
     y_array = np.array(y_list)
