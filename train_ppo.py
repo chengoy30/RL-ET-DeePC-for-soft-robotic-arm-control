@@ -123,7 +123,7 @@ if __name__ == "__main__":
     plt.show()
 
     current_time = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-    training_data_path = os.path.join(save_dir_training_data, f"training_data_rho_{rho}_{current_time}.npz")
+    training_data_path = os.path.join(save_dir_training_data, f"ppo_training_data_rho_{rho}_{current_time}.npz")
     np.savez(training_data_path,
              return_list=np.array(return_list),
              mv_return=np.array(mv_return),
