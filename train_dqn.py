@@ -1,10 +1,7 @@
 import random
-import gymnasium as gym
 import numpy as np
-import collections
 from tqdm import tqdm
 import torch
-import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import Lib.rl_utils as rl_utils
 from Agent.DQN import DQN, ReplayBuffer
@@ -79,9 +76,6 @@ if __name__ == "__main__":
     env = SoftArmEnv(param_deepc, arm_section, y_desired, rho)
     state, _ = env.reset(seed=seed_number)
 
-    total_r = 0
-    done = False
-
     lr = 2e-3
     hidden_dim = 128
     gamma = 0.98
@@ -112,11 +106,16 @@ if __name__ == "__main__":
                 episode_return = 0
                 action_1_count = 0  
                 total_action_count = 0  
-                state, _ = env.reset() if i == 0 and i_episode == 0 else env.reset()
+                state, _ = env.reset()
                 done = False
-                env.step(action = 1)
-                action_1_count += 1  
+                
+                next_state, reward, terminated, truncated, _ = env.step(action=1)
+                state = next_state
+                episode_return += reward
+                action_1_count += 1
                 total_action_count += 1
+                done = terminated or truncated
+                
                 while not done:
                     action = agent.take_action(state)
                     if env.k >= env.N - 1:
@@ -146,18 +145,18 @@ if __name__ == "__main__":
                 pbar.update(1)
 
                 if global_episode % test_interval == 0:
-                    print(f"\n===== testing in the {global_episode}th episode =====")
+                    tqdm.write(f"\n===== testing in the {global_episode}th episode =====")
                     test_obs, test_actions, test_rewards, _, _ = test_DQN_agent(env, agent, num_episodes=1)
                     test_total_reward = sum(test_rewards[0])
-                    print(f"test reward: {test_total_reward:.3f}, best reward: {best_test_reward:.3f}")
+                    tqdm.write(f"test reward: {test_total_reward:.3f}, best reward: {best_test_reward:.3f}")
                     
                     if test_total_reward > best_test_reward:
                         best_test_reward = test_total_reward
                         current_time = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
                         best_model_path = os.path.join(save_dir, f"dqn_softarm_{rho}_{current_time}_best.pth")
                         torch.save(agent.q_net.state_dict(), best_model_path)
-                        print(f"new best model saved! reward: {best_test_reward:.3f}")
-                    print("=" * 50)
+                        tqdm.write(f"new best model saved! reward: {best_test_reward:.3f}")
+                    tqdm.write("=" * 50)
                 
                 if (i_episode + 1) % 10 == 0:
                     pbar.set_postfix({

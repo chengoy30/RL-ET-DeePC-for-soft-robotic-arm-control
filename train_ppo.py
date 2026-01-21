@@ -1,5 +1,4 @@
 import random
-import gymnasium as gym
 import numpy as np
 from tqdm import tqdm
 import torch
@@ -12,8 +11,10 @@ from Lib.utils import generate_circular_trajectory
 import time
 from Agent.PPO import PPO
 
-save_dir = "./saved_models"
+save_dir = "./Saved_Models"
 os.makedirs(save_dir, exist_ok=True)
+save_dir_training_data = "./Saved_Training_Data"
+os.makedirs(save_dir_training_data, exist_ok=True)
 
 def load_data():
     data = np.load("./Data/hankel_matrices.npz", allow_pickle=True)
@@ -44,8 +45,8 @@ if __name__ == "__main__":
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)
 
-    num_episodes = 200
-    rho = 0.5
+    num_episodes = 100
+    rho = 0.1
 
     param_deepc = load_data()
     Tini = param_deepc[4]
@@ -89,7 +90,6 @@ if __name__ == "__main__":
     return_list, action_1_ratio_list, best_test_reward = rl_utils.train_PPO_agent(env, agent, num_episodes, rho)
 
     episodes_list = list(range(len(return_list)))
-    episodes_list = list(range(len(return_list)))
     plt.plot(episodes_list, return_list)
     plt.xlabel('Episodes')
     plt.ylabel('Returns')
@@ -103,7 +103,6 @@ if __name__ == "__main__":
     plt.title('PPO on SoftArmEnv')
     plt.show()
     
-    # 绘制action=1比例变化曲线
     plt.figure(figsize=(10, 6))
     plt.plot(episodes_list, action_1_ratio_list, label='action=1 ratio', color='orange')
     plt.xlabel('Episodes')
@@ -113,7 +112,6 @@ if __name__ == "__main__":
     plt.grid(True, alpha=0.3)
     plt.show()
 
-    # 绘制移动平均后的action=1比例曲线
     mv_action_1_ratio = rl_utils.moving_average(action_1_ratio_list, 9)
     plt.figure(figsize=(10, 6))
     plt.plot(episodes_list, mv_action_1_ratio, label='action=1 ratio (moving average)', color='green')
@@ -124,9 +122,6 @@ if __name__ == "__main__":
     plt.grid(True, alpha=0.3)
     plt.show()
 
-    save_dir_training_data = "./saved_training_data"
-    os.makedirs(save_dir_training_data, exist_ok=True)
-    # 保存训练数据用于后续对比分析
     current_time = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
     training_data_path = os.path.join(save_dir_training_data, f"training_data_rho_{rho}_{current_time}.npz")
     np.savez(training_data_path,
