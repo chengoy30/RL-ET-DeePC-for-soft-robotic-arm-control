@@ -1,0 +1,26 @@
+# RL-based eDeePC for Soft Robotic Arm Control - required dependencies installation guide
+# 
+# Installation method:
+# pip install -r requirements.txt
+#
+# or using conda:
+# conda install --file requirements.txt
+
+# Numerical computing and scientific computing libraries
+numpy
+scipy
+
+# Deep learning frameworks
+torch
+
+# Reinforcement learning environment
+gymnasium
+
+# Optimization solvers
+qpsolvers[quadprog]
+
+# Visualization libraries
+matplotlib
+
+# Progress bar display
+tqdm
