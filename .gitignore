@@ -8,3 +8,5 @@ Saved_Models/*
 
 Saved_Training_Data/*
 !Saved_Training_Data/.gitkeep
+
+.DS_Store
