@@ -46,7 +46,7 @@ if __name__ == "__main__":
     torch.manual_seed(seed_number)
 
     num_episodes = 200
-    rho = 1.0
+    rho = 0.3
 
     param_deepc = load_data()
     Tini = param_deepc[4]

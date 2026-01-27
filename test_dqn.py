@@ -82,12 +82,9 @@ y_target = test_y_target[0]
 
 ref_trajectory = y_desired[:, :len(y_actual)].T  
 
-y_actual_trimmed = y_actual[-180:]  
-ref_trajectory_trimmed = ref_trajectory[-180:]  
-
 # calculate the tracking error MSE (Mean Squared Error of L2 norm)
 # MSE = (1/n) * Σ ||y_actual - y_ref||²
-err = y_actual_trimmed - ref_trajectory_trimmed
+err = y_actual - ref_trajectory
 mse_total = np.mean(np.sum(err**2, axis=1))
 rmse_total = np.sqrt(mse_total)
 

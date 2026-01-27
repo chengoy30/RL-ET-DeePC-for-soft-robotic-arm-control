@@ -103,13 +103,10 @@ if __name__ == "__main__":
     rewards_array = np.array(rewards_list)
     y_array = np.array(y_list)
     y_desired_array = np.array(y_desired_list)
-
-    y_array_trimmed = y_array[-180:]
-    y_desired_array_trimmed = y_desired_array[-180:]
     
     # calculate the tracking error MSE (Mean Squared Error of L2 norm)
     # MSE = (1/n) * Σ ||y_actual - y_ref||²
-    err = y_array_trimmed - y_desired_array_trimmed
+    err = y_array - y_desired_array	
     mse_total = np.mean(np.sum(err**2, axis=1))   # mean(||e_i||^2)
     rmse_total = np.sqrt(mse_total)
     
