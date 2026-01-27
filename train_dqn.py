@@ -91,8 +91,7 @@ if __name__ == "__main__":
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
 
-    agent = DQN(state_dim, hidden_dim, action_dim, lr, gamma, epsilon,
-                target_update, device)
+    agent = DQN(state_dim, hidden_dim, action_dim, lr, gamma, epsilon, target_update, device)
 
     return_list = []
     action_1_ratio_list = [] 
@@ -174,13 +173,6 @@ if __name__ == "__main__":
     plt.title('DQN on SoftArmEnv')
     plt.show()
 
-    mv_return = rl_utils.moving_average(return_list, 9)
-    plt.plot(episodes_list, mv_return)
-    plt.xlabel('Episodes')
-    plt.ylabel('Returns')
-    plt.title('DQN on SoftArmEnv')
-    plt.show()
-
     plt.figure(figsize=(10, 6))
     plt.plot(episodes_list, action_1_ratio_list, label='action=1 ratio', color='orange')
     plt.xlabel('Episodes')
@@ -190,23 +182,11 @@ if __name__ == "__main__":
     plt.grid(True, alpha=0.3)
     plt.show()
 
-    mv_action_1_ratio = rl_utils.moving_average(action_1_ratio_list, 9)
-    plt.figure(figsize=(10, 6))
-    plt.plot(episodes_list, mv_action_1_ratio, label='action=1 ratio (moving average)', color='green')
-    plt.xlabel('Episodes')
-    plt.ylabel('Action=1 Ratio (Moving Average)')
-    plt.title('Action=1 ratio in each episode (moving average)')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.show()
-
     current_time = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
     training_data_path = os.path.join(save_dir_training_data, f"dqn_training_data_rho_{rho}_{current_time}.npz")
     np.savez(training_data_path,
              return_list=np.array(return_list),
-             mv_return=np.array(mv_return),
              action_1_ratio_list=np.array(action_1_ratio_list),
-             mv_action_1_ratio=np.array(mv_action_1_ratio),
              episodes_list=np.array(episodes_list),
              rho=rho,
              num_episodes=num_episodes,
