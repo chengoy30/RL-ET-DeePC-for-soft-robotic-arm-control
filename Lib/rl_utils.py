@@ -82,7 +82,7 @@ def train_PPO_agent(env, agent, num_episodes, rho, test_interval=20, save_dir='.
 
                 if global_episode % test_interval == 0:
                     tqdm.write(f"\n===== testing in episode {global_episode} =====")
-                    test_obs, test_actions, test_rewards, _, _ = test_PPO_agent(env, agent, num_episodes=1)
+                    test_obs, test_actions, test_rewards, _, _ = test_PPO_agent(env, agent)
                     test_total_reward = sum(test_rewards[0])
                     tqdm.write(f"test reward: {test_total_reward:.3f}, best reward: {best_test_reward:.3f}")
                     
@@ -134,117 +134,88 @@ def compute_advantage(gamma, lmbda, td_delta):
     advantage_list.reverse()
     return torch.tensor(np.array(advantage_list), dtype=torch.float)
 
-def test_PPO_agent(env, agent, num_episodes=1):
-    all_observations = []  
-    all_actions = []       
-    all_rewards = []       
-    all_y_actual = []      
-    all_y_target = []      
+def test_PPO_agent(env, agent):
+    state, _ = env.reset()
+    done = False
     
-    for ep in range(num_episodes):
-        state, _ = env.reset()
-        done = False
+    observations = [state.copy()]  
+    actions = []
+    rewards = []
+    y_actual = []  
+    y_target = []  
+    
+    next_state, reward, terminated, truncated, _ = env.step(action=1)
+    actions.append(1)  
+    rewards.append(reward)
+    observations.append(next_state.copy())
+    y_actual.append(env.y.flatten().copy())
+    current_target = env.y_desired[:, min(env.t-1, env.y_desired.shape[1]-1)]
+    y_target.append(current_target.flatten().copy())
+    state = next_state  
+    done = terminated or truncated
+    
+    while not done:
+        with torch.no_grad():
+            state_tensor = torch.tensor(np.array([state]), dtype=torch.float).to(agent.device)
+            probs = agent.actor(state_tensor)  
+            action = probs.argmax().item()  
         
-        episode_obs = [state.copy()]  
-        episode_actions = []
-        episode_rewards = []
-        episode_y_actual = [env.y.flatten().copy()]  
-        initial_target = env.y_desired[:, 0]
-        episode_y_target = [initial_target.flatten().copy()]  
+        if env.k >= env.N - 1:
+            action = 1
         
-        next_state, reward, terminated, truncated, _ = env.step(action=1)
-        episode_actions.append(1)  
-        episode_rewards.append(reward)
-        episode_obs.append(next_state.copy())
-        episode_y_actual.append(env.y.flatten().copy())
-        current_target = env.y_desired[:, min(env.t, env.y_desired.shape[1]-1)]
-        episode_y_target.append(current_target.flatten().copy())
-        state = next_state  
+        next_state, reward, terminated, truncated, _ = env.step(action)
         done = terminated or truncated
         
-        while not done:
-            with torch.no_grad():
-                state_tensor = torch.tensor(np.array([state]), dtype=torch.float).to(agent.device)
-                probs = agent.actor(state_tensor)  
-                action = probs.argmax().item()  
-            
-            if env.k >= env.N - 1:
-                action = 1
-            
-            next_state, reward, terminated, truncated, _ = env.step(action)
-            done = terminated or truncated
-            
-            episode_obs.append(next_state.copy())
-            episode_actions.append(action)
-            episode_rewards.append(reward)
-            episode_y_actual.append(env.y.flatten().copy())
-            current_target = env.y_desired[:, min(env.t, env.y_desired.shape[1]-1)]
-            episode_y_target.append(current_target.flatten().copy())
-            
-            state = next_state
+        observations.append(next_state.copy())
+        actions.append(action)
+        rewards.append(reward)
+        y_actual.append(env.y.flatten().copy())
+        current_target = env.y_desired[:, min(env.t-1, env.y_desired.shape[1]-1)]
+        y_target.append(current_target.flatten().copy())
         
-        all_observations.append(np.array(episode_obs))
-        all_actions.append(np.array(episode_actions))
-        all_rewards.append(np.array(episode_rewards))
-        all_y_actual.append(np.array(episode_y_actual))
-        all_y_target.append(np.array(episode_y_target))
-        
-        tqdm.write(f"Episode {ep+1}: Total Reward = {sum(episode_rewards):.3f}, Steps = {len(episode_actions)}")
+        state = next_state
     
-    return all_observations, all_actions, all_rewards, all_y_actual, all_y_target
+    tqdm.write(f"Episode 1: Total Reward = {sum(rewards):.3f}, Steps = {len(actions)}")
+    return [np.array(observations)], [np.array(actions)], [np.array(rewards)], [np.array(y_actual)], [np.array(y_target)]
 
-def test_DQN_agent(env, agent, num_episodes=1):
-    all_observations = []  
-    all_actions = []       
-    all_rewards = []       
-    all_y_actual = []      
-    all_y_target = []      
+def test_DQN_agent(env, agent):
+    state, _ = env.reset()
+    done = False
     
-    for ep in range(num_episodes):
-        state, _ = env.reset()
-        done = False
-        
-        episode_obs = [state.copy()]  
-        episode_actions = []
-        episode_rewards = []
-        episode_y_actual = [env.y.flatten().copy()] 
-        initial_target = env.y_desired[:, 0]
-        episode_y_target = [initial_target.flatten().copy()] 
+    observations = [state.copy()]  
+    actions = []
+    rewards = []
+    y_actual = [] 
+    y_target = [] 
 
-        next_state, reward, terminated, truncated, _ = env.step(action=1)
-        episode_actions.append(1)  
-        episode_rewards.append(reward)
-        episode_obs.append(next_state.copy())
-        episode_y_actual.append(env.y.flatten().copy())
-        current_target = env.y_desired[:, min(env.t, env.y_desired.shape[1]-1)]
-        episode_y_target.append(current_target.flatten().copy())
-        state = next_state  
+    next_state, reward, terminated, truncated, _ = env.step(action=1)
+    actions.append(1)  
+    rewards.append(reward)
+    observations.append(next_state.copy())
+    y_actual.append(env.y.flatten().copy())
+    current_target = env.y_desired[:, min(env.t-1, env.y_desired.shape[1]-1)]
+    y_target.append(current_target.flatten().copy())
+    state = next_state  
+    done = terminated or truncated
+    
+    while not done:
+        with torch.no_grad():
+            state_tensor = torch.tensor(np.array([state]), dtype=torch.float).to(agent.device)
+            action = agent.q_net(state_tensor).argmax().item()
+        
+        if env.k >= env.N - 1:
+            action = 1
+        
+        next_state, reward, terminated, truncated, _ = env.step(action)
         done = terminated or truncated
         
-        while not done:
-            with torch.no_grad():
-                state_tensor = torch.tensor(np.array([state]), dtype=torch.float).to(agent.device)
-                action = agent.q_net(state_tensor).argmax().item()
-            
-            if env.k >= env.N - 1:
-                action = 1
-            
-            next_state, reward, terminated, truncated, _ = env.step(action)
-            done = terminated or truncated
-            
-            episode_obs.append(next_state.copy())
-            episode_actions.append(action)
-            episode_rewards.append(reward)
-            episode_y_actual.append(env.y.flatten().copy())
-            current_target = env.y_desired[:, min(env.t, env.y_desired.shape[1]-1)]
-            episode_y_target.append(current_target.flatten().copy())
-            state = next_state
-        
-        all_observations.append(np.array(episode_obs))
-        all_actions.append(np.array(episode_actions))
-        all_rewards.append(np.array(episode_rewards))
-        all_y_actual.append(np.array(episode_y_actual))
-        all_y_target.append(np.array(episode_y_target))
-        tqdm.write(f"Episode {ep+1}: Total Reward = {sum(episode_rewards):.3f}, Steps = {len(episode_actions)}")
+        observations.append(next_state.copy())
+        actions.append(action)
+        rewards.append(reward)
+        y_actual.append(env.y.flatten().copy())
+        current_target = env.y_desired[:, min(env.t, env.y_desired.shape[1]-1)]
+        y_target.append(current_target.flatten().copy())
+        state = next_state
     
-    return all_observations, all_actions, all_rewards, all_y_actual, all_y_target
+    tqdm.write(f"Episode 1: Total Reward = {sum(rewards):.3f}, Steps = {len(actions)}")
+    return [np.array(observations)], [np.array(actions)], [np.array(rewards)], [np.array(y_actual)], [np.array(y_target)]

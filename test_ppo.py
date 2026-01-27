@@ -11,14 +11,14 @@ import matplotlib.pyplot as plt
 from Lib.rl_utils import test_PPO_agent
 
 save_dir = "./Saved_Models"
-model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-01-21_14-57-20_best.pth")
+model_path = os.path.join(save_dir, "ppo_softarm_1.0_2026-01-22_12-13-30_best.pth")
 
 seed_number = 10
 random.seed(seed_number)
 np.random.seed(seed_number)
 torch.manual_seed(seed_number)
 
-rho = 0.1
+rho = 1.0
 
 param_deepc = load_data()
 Tini = param_deepc[4]
@@ -76,6 +76,38 @@ y_target = test_y_target[0]
 
 ref_trajectory = y_desired[:, :len(y_actual)].T
 
+y_actual_trimmed = y_actual[-180:]  
+ref_trajectory_trimmed = ref_trajectory[-180:]  
+
+# calculate the tracking error MSE (Mean Squared Error of L2 norm)
+# MSE = (1/n) * Σ ||y_actual - y_ref||²
+# l2_norms = np.linalg.norm(y_actual_trimmed - ref_trajectory_trimmed, axis=1)
+# mse_total = np.mean(l2_norms ** 2)
+
+# test_observations 是一个列表，需要先获取第一个episode的数据（numpy数组）
+obs_array = test_observations[0]  # 获取第一个episode的观测数据（numpy数组）
+l2_norms = obs_array[-180:, 3]  # 从numpy数组中提取最后180行的第3列
+mse_total = np.mean(l2_norms)
+
+# calculate the RMSE (Root Mean Squared Error)
+rmse_total = np.sqrt(mse_total)
+
+# # calculate the euclidean distance error at each time step
+# euclidean_errors = np.sqrt(np.sum((y_actual_trimmed - ref_trajectory_trimmed) ** 2, axis=1))
+# mean_euclidean_error = np.mean(euclidean_errors)
+# max_euclidean_error = np.max(euclidean_errors)
+
+print("\n" + "="*50)
+print("Tracking Error Statistics")
+print("="*50)
+print(f"MSE: {mse_total:.6f} mm²")
+print("-"*50)
+print(f"RMSE: {rmse_total:.4f} mm")
+print("-"*50)
+# print(f"Mean Euclidean Distance Error: {mean_euclidean_error:.4f} mm")
+# print(f"Max Euclidean Distance Error: {max_euclidean_error:.4f} mm")
+print("="*50 + "\n")
+
 time_steps = np.arange(len(y_actual))
 action_time_steps = np.arange(len(action_data))
 
@@ -93,6 +125,9 @@ for i, (ax, label, color) in enumerate(zip(axes1, labels, colors)):
     ax.legend(loc='upper right', fontsize=10)
     ax.grid(True, alpha=0.3)
     ax.set_xlim([0, len(time_steps)])
+
+    if i == 2:
+        ax.set_ylim(-85, -81)
 
 axes1[2].set_xlabel('time step', fontsize=12)
 fig1.suptitle('PPO test - Observation (position) results', fontsize=14, fontweight='bold')

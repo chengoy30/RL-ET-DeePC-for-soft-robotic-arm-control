@@ -12,9 +12,6 @@ from Lib.utils import generate_circular_trajectory
 import time
 from Agent.PPO import PPO
 
-save_dir = "./saved_models"
-os.makedirs(save_dir, exist_ok=True)
-
 def load_data():
     data = np.load("./Data/hankel_matrices.npz", allow_pickle=True)
     Up = data["Up"]
@@ -44,6 +41,8 @@ if __name__ == "__main__":
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)
 
+    rho = 0
+
     param_deepc = load_data()
     Tini = param_deepc[4]
     N = param_deepc[5]
@@ -67,21 +66,8 @@ if __name__ == "__main__":
 
     y_desired = circular_trajectory.T
 
-    env = SoftArmEnv(param_deepc, arm_section, y_desired, rho=0.01)
+    env = SoftArmEnv(param_deepc, arm_section, y_desired, rho)
     state, _ = env.reset(seed=seed_number)
-
-    actor_lr = 1e-3
-    critic_lr = 1e-2
-    hidden_dim = 128
-    gamma = 0.98
-    lmbda = 0.95
-    epochs = 10 
-    eps = 0.2
-    device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
-
-    state_dim = env.observation_space.shape[0]
-    action_dim = env.action_space.n
-    agent = PPO(state_dim, hidden_dim, action_dim, actor_lr, critic_lr, lmbda, epochs, eps, gamma, device)
 
     print("start testing the environment...")
     time_start = time.time()
@@ -101,7 +87,7 @@ if __name__ == "__main__":
         
         rewards_list.append(reward)
         y_list.append(env.y.flatten().copy())
-        current_target = env.y_desired[:, min(env.t, env.y_desired.shape[1]-1)]
+        current_target = env.y_desired[:, min(env.t-1, env.y_desired.shape[1]-1)]
         y_desired_list.append(current_target.flatten().copy())
         
         step_count += 1
@@ -117,6 +103,26 @@ if __name__ == "__main__":
     rewards_array = np.array(rewards_list)
     y_array = np.array(y_list)
     y_desired_array = np.array(y_desired_list)
+
+    y_array_trimmed = y_array[-180:]
+    y_desired_array_trimmed = y_desired_array[-180:]
+    
+    # calculate the tracking error MSE (Mean Squared Error of L2 norm)
+    # MSE = (1/n) * Σ ||y_actual - y_ref||²
+    err = y_array_trimmed - y_desired_array_trimmed
+    mse_total = np.mean(np.sum(err**2, axis=1))   # mean(||e_i||^2)
+    rmse_total = np.sqrt(mse_total)
+    
+    print("\n" + "="*50)
+    print("Tracking Error Statistics")
+    print("="*50)
+
+    print(f"MSE: {mse_total:.6f} mm²")
+    print("-"*50)
+
+    print(f"RMSE: {rmse_total:.4f} mm")
+
+    print("="*50 + "\n")
     
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
     

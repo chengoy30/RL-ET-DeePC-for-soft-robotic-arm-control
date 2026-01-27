@@ -69,7 +69,7 @@ class SoftArmEnv:
         self.l_min = 0.70 * self.arm_section.L
         self.l_max = 1.15 * self.arm_section.L
         self.arm_length_mm = 10.0 * self.arm_section.L
-        self.Q_reward = 0.33 * np.eye(self.p) 
+        self.Q_reward = 3.33 * np.eye(self.p) 
 
         self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self.p + 1,))
         self.action_space = gym.spaces.Discrete(2)
@@ -130,11 +130,9 @@ class SoftArmEnv:
         
         noise = self._rng.normal(0, 0.002, (3, 1))
         self.y = np.array([[x], [y], [-z]]) + noise
-
-        self.t += 1
         
         self.uini = np.roll(self.uini, -1, axis=1)
-        self.uini[:, -1] = self.useq[:, self.k]
+        self.uini[:, -1] = u_applied
         
         self.yini = np.roll(self.yini, -1, axis=1)
         self.yini[:, -1] = self.y.flatten()
@@ -143,6 +141,7 @@ class SoftArmEnv:
         reward = stagecost(self.y, current_target, Q=self.Q_reward) * (-1) - self.rho * action
         next_state = self.getFeat(current_target)
 
+        self.t += 1
         # terminated: when reach the terminal state (task completed or failed)
         # truncated: when reach the maximum step limit
         if self.t >= self.T:

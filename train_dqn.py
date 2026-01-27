@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
                 if global_episode % test_interval == 0:
                     tqdm.write(f"\n===== testing in the {global_episode}th episode =====")
-                    test_obs, test_actions, test_rewards, _, _ = test_DQN_agent(env, agent, num_episodes=1)
+                    test_obs, test_actions, test_rewards, _, _ = test_DQN_agent(env, agent)
                     test_total_reward = sum(test_rewards[0])
                     tqdm.write(f"test reward: {test_total_reward:.3f}, best reward: {best_test_reward:.3f}")
                     

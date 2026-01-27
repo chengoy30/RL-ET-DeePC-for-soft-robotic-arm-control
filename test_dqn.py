@@ -11,15 +11,15 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from Lib.SoftArm_lib import SoftArmSection
 
-save_dir = "./saved_models"
-model_path = os.path.join(save_dir, "dqn_softarm_0.1_2026-01-21_10-16-09_best.pth")
+save_dir = "./Saved_Models"
+model_path = os.path.join(save_dir, "dqn_softarm_1.0_2026-01-22_10-17-45_best.pth")
 
 seed_number = 0
 random.seed(seed_number)
 np.random.seed(seed_number)
 torch.manual_seed(seed_number)
 
-rho = 0.1  
+rho = 1.0  
 
 param_deepc = load_data()
 Tini = param_deepc[4]
@@ -70,7 +70,7 @@ else:
     agent.target_q_net.load_state_dict(checkpoint)  
 
 print("start testing the trained DQN model...")
-test_observations, test_actions, test_rewards, test_y_actual, test_y_target = test_DQN_agent(env, agent, num_episodes=1)
+test_observations, test_actions, test_rewards, test_y_actual, test_y_target = test_DQN_agent(env, agent)
 print(f"\ntesting completed! total steps: {len(test_actions[0])}")
 
 obs_data = test_observations[0]  
@@ -81,6 +81,23 @@ y_actual = test_y_actual[0]
 y_target = test_y_target[0]  
 
 ref_trajectory = y_desired[:, :len(y_actual)].T  
+
+y_actual_trimmed = y_actual[-180:]  
+ref_trajectory_trimmed = ref_trajectory[-180:]  
+
+# calculate the tracking error MSE (Mean Squared Error of L2 norm)
+# MSE = (1/n) * Σ ||y_actual - y_ref||²
+err = y_actual_trimmed - ref_trajectory_trimmed
+mse_total = np.mean(np.sum(err**2, axis=1))
+rmse_total = np.sqrt(mse_total)
+
+print("\n" + "="*50)
+print("Tracking Error Statistics")
+print("="*50)
+print(f"MSE: {mse_total:.6f} mm²")
+print("-"*50)
+print(f"RMSE: {rmse_total:.4f} mm")
+print("="*50 + "\n")
 
 time_steps = np.arange(len(y_actual))
 action_time_steps = np.arange(len(action_data))
@@ -99,6 +116,8 @@ for i, (ax, label, color) in enumerate(zip(axes1, labels, colors)):
     ax.legend(loc='upper right', fontsize=10)
     ax.grid(True, alpha=0.3)
     ax.set_xlim([0, len(time_steps)])
+    if i == 2:
+        ax.set_ylim(-85, -81)
 
 axes1[2].set_xlabel('time steps', fontsize=12)
 fig1.suptitle('DQN control test - Observation (position) results', fontsize=14, fontweight='bold')
@@ -141,6 +160,8 @@ ax3d.plot(y_actual[:, 0], y_actual[:, 1], y_actual[:, 2],
 
 ax3d.plot(ref_trajectory[:, 0], ref_trajectory[:, 1], ref_trajectory[:, 2], 
           label='reference trajectory', color='#3498db', linestyle='--', linewidth=2, alpha=0.7)
+
+ax3d.set_zlim(-85, -81)
 
 ax3d.set_xlabel('X (mm)', fontsize=11)
 ax3d.set_ylabel('Y (mm)', fontsize=11)
