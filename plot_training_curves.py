@@ -2,14 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import glob
+from Lib.rl_utils import moving_average
 
 def load_training_data(file_path):
     data = np.load(file_path)
     return {
         'return_list': data['return_list'],
-        'mv_return': data['mv_return'],
         'action_1_ratio_list': data['action_1_ratio_list'],
-        'mv_action_1_ratio': data['mv_action_1_ratio'],
         'episodes_list': data['episodes_list'],
         'rho': float(data['rho']),
         'num_episodes': int(data['num_episodes']),
@@ -125,7 +124,8 @@ def plot_mv_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_pa
             curves = []
             for p in paths:
                 data = np.load(p, allow_pickle=True)
-                mv_return_list = np.asarray(data["mv_return"], dtype=float).squeeze()
+                return_list = np.asarray(data["return_list"], dtype=float).squeeze()
+                mv_return_list = moving_average(return_list, 9)
                 curves.append(mv_return_list)
             
             min_len = min(len(c) for c in curves)
@@ -276,7 +276,8 @@ def plot_mv_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax",
             curves = []
             for p in paths:
                 data = np.load(p, allow_pickle=True)
-                mv_action_1_ratio = np.asarray(data["mv_action_1_ratio"], dtype=float).squeeze()
+                action_1_ratio_list = np.asarray(data["action_1_ratio_list"], dtype=float).squeeze()
+                mv_action_1_ratio = moving_average(action_1_ratio_list, 9)
                 curves.append(mv_action_1_ratio)
             
             min_len = min(len(c) for c in curves)
