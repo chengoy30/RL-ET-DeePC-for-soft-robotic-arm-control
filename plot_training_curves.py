@@ -4,6 +4,21 @@ import os
 import glob
 from Lib.rl_utils import moving_average
 
+COLOR_PALETTE = [
+    ("#c0392b", "#f5b7b1"),   # red
+    ("#2980b9", "#aed6f1"),   # blue
+    ("#27ae60", "#a9dfbf"),   # green
+    ("#f39c12", "#fdebd0"),   # orange
+    ("#8e44ad", "#d7bde2"),   # purple
+    ("#34495e", "#bdc3c7"),   # dark gray
+    ("#16a085", "#a3e4d7"),   # cyan
+    ("#d35400", "#f5cba7"),   # dark orange
+    ("#1abc9c", "#a3e4d7"),   # turquoise
+    ("#9b59b6", "#d7bde2"),   # amethyst
+    ("#e74c3c", "#fadbd8"),   # light red
+    ("#3498db", "#d4e6f1"),   # light blue
+]
+
 def load_training_data(file_path):
     data = np.load(file_path)
     return {
@@ -17,21 +32,6 @@ def load_training_data(file_path):
     }
 
 def plot_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=None):
-    color_palette = [
-        ("#c0392b", "#f5b7b1"),   # red
-        ("#2980b9", "#aed6f1"),   # blue
-        ("#27ae60", "#a9dfbf"),   # green
-        ("#f39c12", "#fdebd0"),   # orange
-        ("#8e44ad", "#d7bde2"),   # purple
-        ("#16a085", "#a3e4d7"),   # cyan
-        ("#d35400", "#f5cba7"),   # dark orange
-        ("#1abc9c", "#a3e4d7"),   # turquoise
-        ("#9b59b6", "#d7bde2"),   # amethyst
-        ("#34495e", "#bdc3c7"),   # dark gray
-        ("#e74c3c", "#fadbd8"),   # light red
-        ("#3498db", "#d4e6f1"),   # light blue
-    ]
-    
     plt.figure(figsize=(10, 6), dpi=150)
     
     color_idx = 0
@@ -49,6 +49,7 @@ def plot_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=
             for p in paths:
                 data = np.load(p, allow_pickle=True)
                 return_list = np.asarray(data["return_list"], dtype=float).squeeze()
+                return_list = np.clip(return_list, -350, None)
                 curves.append(return_list)
             
             min_len = min(len(c) for c in curves)
@@ -65,7 +66,7 @@ def plot_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=
                 low = mean_curve - std
                 high = mean_curve + std
             
-            line_color, shade_color = color_palette[color_idx % len(color_palette)]
+            line_color, shade_color = COLOR_PALETTE[color_idx % len(COLOR_PALETTE)]
             label = rf"{algo.upper()} ($\rho={rho}$)"
             
             plt.fill_between(x, low, high, color=shade_color, alpha=0.4, linewidth=0)
@@ -73,7 +74,7 @@ def plot_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=
             
             color_idx += 1
     
-    plt.ylim(-350, -180)
+    plt.ylim(-200, -20)
     plt.xlabel("Episodes", fontsize=12)
     plt.ylabel("Returns", fontsize=12)
     plt.title("Training Returns Comparison", fontsize=14)
@@ -92,22 +93,7 @@ def plot_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=
     plt.savefig(save_path, dpi=150, bbox_inches='tight')
     plt.close()
 
-def plot_mv_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=None):
-    color_palette = [
-        ("#c0392b", "#f5b7b1"),   # red
-        ("#2980b9", "#aed6f1"),   # blue
-        ("#27ae60", "#a9dfbf"),   # green
-        ("#f39c12", "#fdebd0"),   # orange
-        ("#8e44ad", "#d7bde2"),   # purple
-        ("#16a085", "#a3e4d7"),   # cyan
-        ("#d35400", "#f5cba7"),   # dark orange
-        ("#1abc9c", "#a3e4d7"),   # turquoise
-        ("#9b59b6", "#d7bde2"),   # amethyst
-        ("#34495e", "#bdc3c7"),   # dark gray
-        ("#e74c3c", "#fadbd8"),   # light red
-        ("#3498db", "#d4e6f1"),   # light blue
-    ]
-    
+def plot_mv_return_curves(save_dir, rho_list, algo_list, shade="minmax", window_size=9, save_path=None):
     plt.figure(figsize=(10, 6), dpi=150)
     
     color_idx = 0
@@ -125,7 +111,8 @@ def plot_mv_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_pa
             for p in paths:
                 data = np.load(p, allow_pickle=True)
                 return_list = np.asarray(data["return_list"], dtype=float).squeeze()
-                mv_return_list = moving_average(return_list, 9)
+                return_list = np.clip(return_list, -350, None)
+                mv_return_list = moving_average(return_list, window_size)
                 curves.append(mv_return_list)
             
             min_len = min(len(c) for c in curves)
@@ -142,7 +129,7 @@ def plot_mv_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_pa
                 low = mean_curve - std
                 high = mean_curve + std
             
-            line_color, shade_color = color_palette[color_idx % len(color_palette)]
+            line_color, shade_color = COLOR_PALETTE[color_idx % len(COLOR_PALETTE)]
             label = rf"{algo.upper()} ($\rho={rho}$)"
             
             plt.fill_between(x, low, high, color=shade_color, alpha=0.4, linewidth=0)
@@ -150,7 +137,7 @@ def plot_mv_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_pa
             
             color_idx += 1
     
-    plt.ylim(-350, -180)
+    plt.ylim(-200, -20)
     plt.xlabel("Episodes", fontsize=12)
     plt.ylabel("Returns", fontsize=12)
     plt.title("Training Moving Average Returns Comparison", fontsize=14)
@@ -170,21 +157,6 @@ def plot_mv_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_pa
     plt.close()
 
 def plot_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=None):
-    color_palette = [
-        ("#c0392b", "#f5b7b1"),   # red
-        ("#2980b9", "#aed6f1"),   # blue
-        ("#27ae60", "#a9dfbf"),   # green
-        ("#f39c12", "#fdebd0"),   # orange
-        ("#8e44ad", "#d7bde2"),   # purple
-        ("#16a085", "#a3e4d7"),   # cyan
-        ("#d35400", "#f5cba7"),   # dark orange
-        ("#1abc9c", "#a3e4d7"),   # turquoise
-        ("#9b59b6", "#d7bde2"),   # amethyst
-        ("#34495e", "#bdc3c7"),   # dark gray
-        ("#e74c3c", "#fadbd8"),   # light red
-        ("#3498db", "#d4e6f1"),   # light blue
-    ]
-    
     plt.figure(figsize=(10, 6), dpi=150)
     
     color_idx = 0
@@ -218,7 +190,7 @@ def plot_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax", sa
                 low = mean_curve - std
                 high = mean_curve + std
             
-            line_color, shade_color = color_palette[color_idx % len(color_palette)]
+            line_color, shade_color = COLOR_PALETTE[color_idx % len(COLOR_PALETTE)]
             label = rf"{algo.upper()} ($\rho={rho}$)"
             
             plt.fill_between(x, low, high, color=shade_color, alpha=0.4, linewidth=0)
@@ -244,22 +216,7 @@ def plot_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax", sa
     plt.savefig(save_path, dpi=150, bbox_inches='tight')
     plt.close()
 
-def plot_mv_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=None):
-    color_palette = [
-        ("#c0392b", "#f5b7b1"),   # red
-        ("#2980b9", "#aed6f1"),   # blue
-        ("#27ae60", "#a9dfbf"),   # green
-        ("#f39c12", "#fdebd0"),   # orange
-        ("#8e44ad", "#d7bde2"),   # purple
-        ("#16a085", "#a3e4d7"),   # cyan
-        ("#d35400", "#f5cba7"),   # dark orange
-        ("#1abc9c", "#a3e4d7"),   # turquoise
-        ("#9b59b6", "#d7bde2"),   # amethyst
-        ("#34495e", "#bdc3c7"),   # dark gray
-        ("#e74c3c", "#fadbd8"),   # light red
-        ("#3498db", "#d4e6f1"),   # light blue
-    ]
-    
+def plot_mv_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax", window_size=9, save_path=None):
     plt.figure(figsize=(10, 6), dpi=150)
     
     color_idx = 0
@@ -277,7 +234,7 @@ def plot_mv_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax",
             for p in paths:
                 data = np.load(p, allow_pickle=True)
                 action_1_ratio_list = np.asarray(data["action_1_ratio_list"], dtype=float).squeeze()
-                mv_action_1_ratio = moving_average(action_1_ratio_list, 9)
+                mv_action_1_ratio = moving_average(action_1_ratio_list, window_size)
                 curves.append(mv_action_1_ratio)
             
             min_len = min(len(c) for c in curves)
@@ -294,7 +251,7 @@ def plot_mv_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax",
                 low = mean_curve - std
                 high = mean_curve + std
             
-            line_color, shade_color = color_palette[color_idx % len(color_palette)]
+            line_color, shade_color = COLOR_PALETTE[color_idx % len(COLOR_PALETTE)]
             label = rf"{algo.upper()} ($\rho={rho}$)"
             
             plt.fill_between(x, low, high, color=shade_color, alpha=0.4, linewidth=0)
@@ -323,7 +280,7 @@ def plot_mv_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax",
 
 if __name__ == "__main__":
     save_dir = "./Saved_Training_Data"
-    plot_return_curves(save_dir, rho_list=[0.1, 0.5, 1.0], algo_list=["dqn", "ppo"], shade="minmax")
-    plot_mv_return_curves(save_dir, rho_list=[0.1, 0.5, 1.0], algo_list=["dqn", "ppo"], shade="minmax")
-    plot_action_1_ratio_curves(save_dir, rho_list=[0.1, 0.5, 1.0], algo_list=["dqn", "ppo"], shade="minmax")
-    plot_mv_action_1_ratio_curves(save_dir, rho_list=[0.1, 0.5, 1.0], algo_list=["dqn", "ppo"], shade="minmax")
+    plot_return_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo"], shade="minmax")
+    plot_mv_return_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo"], shade="minmax", window_size=25)
+    plot_action_1_ratio_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo"], shade="minmax")
+    plot_mv_action_1_ratio_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo"], shade="minmax", window_size=25)

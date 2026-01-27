@@ -11,14 +11,14 @@ import matplotlib.pyplot as plt
 from Lib.rl_utils import test_PPO_agent
 
 save_dir = "./Saved_Models"
-model_path = os.path.join(save_dir, "ppo_softarm_0.3_2026-01-27_00-31-15_best.pth")
+model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-01-27_10-40-39_best.pth")
 
 seed_number = 10
 random.seed(seed_number)
 np.random.seed(seed_number)
 torch.manual_seed(seed_number)
 
-rho = 0.3
+rho = 0.1
 
 param_deepc = load_data()
 Tini = param_deepc[4]
@@ -149,7 +149,7 @@ from mpl_toolkits.mplot3d import Axes3D
 fig3 = plt.figure(figsize=(12, 8))
 ax3d = fig3.add_subplot(111, projection='3d')
 
-ax3d.plot(y_actual[:, 0], y_actual[:, 1], y_actual[:, 2], 
+ax3d.plot(y_actual[-145:, 0], y_actual[-145:, 1], y_actual[-145:, 2], 
           label='real trajectory', color='#e74c3c', linewidth=2)
 
 ax3d.plot(ref_trajectory[:, 0], ref_trajectory[:, 1], ref_trajectory[:, 2], 
@@ -160,7 +160,9 @@ ax3d.set_ylabel('Y (mm)', fontsize=11)
 ax3d.set_zlabel('Z (mm)', fontsize=11)
 ax3d.legend(loc='upper left', fontsize=10)
 
-ax3d.view_init(elev=20, azim=45)
+ax3d.set_zlim(-95, -75)
+# ax3d.view_init(elev=90, azim=0)
+ax3d.view_init(elev=90, azim=0)  # view from top
 
 plt.tight_layout()
 plt.savefig('./Figure/ppo_trajectory_3d.png', dpi=150, bbox_inches='tight')

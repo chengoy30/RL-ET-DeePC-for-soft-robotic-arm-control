@@ -36,7 +36,7 @@ if __name__ == "__main__":
     torch.manual_seed(seed_number)
 
     rho = 0
-    threshold = 0.1
+    threshold = 0.6
 
     param_deepc = load_data()
     Tini = param_deepc[4]
@@ -101,93 +101,95 @@ if __name__ == "__main__":
     y_actual = np.array(y_actual)
     y_target = np.array(y_target)
 
-ref_trajectory = y_desired[:, :len(y_actual)].T  
+    print(f"total reward: {sum(reward_data):.4f}")
 
-# calculate the tracking error MSE (Mean Squared Error of L2 norm)
-# MSE = (1/n) * Σ ||y_actual - y_ref||²
-err = y_actual - ref_trajectory
-mse_total = np.mean(np.sum(err**2, axis=1))
-rmse_total = np.sqrt(mse_total)
+    ref_trajectory = y_desired[:, :len(y_actual)].T  
 
-print("\n" + "="*50)
-print("Tracking Error Statistics")
-print("="*50)
-print(f"MSE: {mse_total:.6f} mm²")
-print("-"*50)
-print(f"RMSE: {rmse_total:.4f} mm")
-print("="*50 + "\n")
+    # calculate the tracking error MSE (Mean Squared Error of L2 norm)
+    # MSE = (1/n) * Σ ||y_actual - y_ref||²
+    err = y_actual - ref_trajectory
+    mse_total = np.mean(np.sum(err**2, axis=1))
+    rmse_total = np.sqrt(mse_total)
 
-time_steps = np.arange(len(y_actual))
-action_time_steps = np.arange(len(action_data))
+    print("\n" + "="*50)
+    print("Tracking Error Statistics")
+    print("="*50)
+    print(f"MSE: {mse_total:.6f} mm²")
+    print("-"*50)
+    print(f"RMSE: {rmse_total:.4f} mm")
+    print("="*50 + "\n")
 
-fig1, axes1 = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
+    time_steps = np.arange(len(y_actual))
+    action_time_steps = np.arange(len(action_data))
 
-labels = ['X', 'Y', 'Z']
-colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+    fig1, axes1 = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
 
-for i, (ax, label, color) in enumerate(zip(axes1, labels, colors)):
-    ax.plot(time_steps, y_actual[:, i], label=f'actual {label}', color=color, linewidth=2)
-    ax.plot(time_steps[:len(ref_trajectory)], ref_trajectory[:, i], 
-            label=f'reference {label}', color=color, linestyle='--', alpha=0.7, linewidth=2)
-    
-    ax.set_ylabel(label, fontsize=12)
-    ax.legend(loc='upper right', fontsize=10)
-    ax.grid(True, alpha=0.3)
-    ax.set_xlim([0, len(time_steps)])
-    if i == 2:
-        ax.set_ylim(-85, -81)
+    labels = ['X', 'Y', 'Z']
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
 
-axes1[2].set_xlabel('time steps', fontsize=12)
-fig1.suptitle('DQN control test - Observation (position) results', fontsize=14, fontweight='bold')
-plt.tight_layout()
-plt.savefig('./Figure/dqn_observation_results.png', dpi=150, bbox_inches='tight')
-plt.show()
+    for i, (ax, label, color) in enumerate(zip(axes1, labels, colors)):
+        ax.plot(time_steps, y_actual[:, i], label=f'actual {label}', color=color, linewidth=2)
+        ax.plot(time_steps[:len(ref_trajectory)], ref_trajectory[:, i], 
+                label=f'reference {label}', color=color, linestyle='--', alpha=0.7, linewidth=2)
+        
+        ax.set_ylabel(label, fontsize=12)
+        ax.legend(loc='upper right', fontsize=10)
+        ax.grid(True, alpha=0.3)
+        ax.set_xlim([0, len(time_steps)])
+        if i == 2:
+            ax.set_ylim(-85, -81)
 
-fig2, axes2 = plt.subplots(2, 1, figsize=(12, 6))
+    axes1[2].set_xlabel('time steps', fontsize=12)
+    fig1.suptitle('DQN control test - Observation (position) results', fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    plt.savefig('./Figure/dqn_observation_results.png', dpi=150, bbox_inches='tight')
+    plt.show()
 
-ax_action = axes2[0]
-ax_action.scatter(action_time_steps, action_data, color=['#e74c3c' if a == 1 else '#3498db' for a in action_data], 
-              alpha=0.7, edgecolor='black', linewidth=0.5)
-ax_action.set_ylabel('Action', fontsize=12)
-ax_action.set_xlabel('Time Step', fontsize=12)
-ax_action.set_yticks([0, 1])
-ax_action.set_yticklabels(['0', '1'])
-ax_action.grid(True, alpha=0.3, axis='y')
-ax_action.set_xlim([-1, len(action_time_steps)])
+    fig2, axes2 = plt.subplots(2, 1, figsize=(12, 6))
 
-ax_pie = axes2[1]
-action_counts = [np.sum(action_data == 0), np.sum(action_data == 1)]
-labels_pie = [f'Action 0\n{action_counts[0]}times', 
-              f'Action 1\n{action_counts[1]}times']
-colors_pie = ['#3498db', '#e74c3c']
-explode = (0.05, 0.05)
+    ax_action = axes2[0]
+    ax_action.scatter(action_time_steps, action_data, color=['#e74c3c' if a == 1 else '#3498db' for a in action_data], 
+                alpha=0.7, edgecolor='black', linewidth=0.5)
+    ax_action.set_ylabel('Action', fontsize=12)
+    ax_action.set_xlabel('Time Step', fontsize=12)
+    ax_action.set_yticks([0, 1])
+    ax_action.set_yticklabels(['0', '1'])
+    ax_action.grid(True, alpha=0.3, axis='y')
+    ax_action.set_xlim([-1, len(action_time_steps)])
 
-wedges, texts, autotexts = ax_pie.pie(action_counts, explode=explode, labels=labels_pie, 
-                                       colors=colors_pie, autopct='%1.1f%%',
-                                       shadow=True, startangle=90)
+    ax_pie = axes2[1]
+    action_counts = [np.sum(action_data == 0), np.sum(action_data == 1)]
+    labels_pie = [f'Action 0\n{action_counts[0]}times', 
+                f'Action 1\n{action_counts[1]}times']
+    colors_pie = ['#3498db', '#e74c3c']
+    explode = (0.05, 0.05)
 
-plt.tight_layout()
-plt.savefig('./Figure/dqn_action_results.png', dpi=150, bbox_inches='tight')
-plt.show()
+    wedges, texts, autotexts = ax_pie.pie(action_counts, explode=explode, labels=labels_pie, 
+                                        colors=colors_pie, autopct='%1.1f%%',
+                                        shadow=True, startangle=90)
 
-fig3 = plt.figure(figsize=(12, 8))
-ax3d = fig3.add_subplot(111, projection='3d')
+    plt.tight_layout()
+    plt.savefig('./Figure/dqn_action_results.png', dpi=150, bbox_inches='tight')
+    plt.show()
 
-ax3d.plot(y_actual[:, 0], y_actual[:, 1], y_actual[:, 2], 
-          label='real trajectory', color='#e74c3c', linewidth=2)
+    fig3 = plt.figure(figsize=(12, 8))
+    ax3d = fig3.add_subplot(111, projection='3d')
 
-ax3d.plot(ref_trajectory[:, 0], ref_trajectory[:, 1], ref_trajectory[:, 2], 
-          label='reference trajectory', color='#3498db', linestyle='--', linewidth=2, alpha=0.7)
+    ax3d.plot(y_actual[:, 0], y_actual[:, 1], y_actual[:, 2], 
+            label='real trajectory', color='#e74c3c', linewidth=2)
 
-ax3d.set_zlim(-85, -81)
+    ax3d.plot(ref_trajectory[:, 0], ref_trajectory[:, 1], ref_trajectory[:, 2], 
+            label='reference trajectory', color='#3498db', linestyle='--', linewidth=2, alpha=0.7)
 
-ax3d.set_xlabel('X (mm)', fontsize=11)
-ax3d.set_ylabel('Y (mm)', fontsize=11)
-ax3d.set_zlabel('Z (mm)', fontsize=11)
-ax3d.legend(loc='upper left', fontsize=10)
+    ax3d.set_zlim(-85, -81)
 
-ax3d.view_init(elev=20, azim=45)
+    ax3d.set_xlabel('X (mm)', fontsize=11)
+    ax3d.set_ylabel('Y (mm)', fontsize=11)
+    ax3d.set_zlabel('Z (mm)', fontsize=11)
+    ax3d.legend(loc='upper left', fontsize=10)
 
-plt.tight_layout()
-plt.savefig('./Figure/dqn_trajectory_3d.png', dpi=150, bbox_inches='tight')
-plt.show()
+    ax3d.view_init(elev=20, azim=45)
+
+    plt.tight_layout()
+    plt.savefig('./Figure/dqn_trajectory_3d.png', dpi=150, bbox_inches='tight')
+    plt.show()
