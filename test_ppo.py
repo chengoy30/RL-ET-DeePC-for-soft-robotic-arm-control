@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from Lib.rl_utils import test_PPO_agent
 
 save_dir = "./Saved_Models"
-model_path = os.path.join(save_dir, "ppo_softarm_0.3_2026-01-26_21-25-45_best.pth")
+model_path = os.path.join(save_dir, "ppo_softarm_0.3_2026-01-27_00-31-15_best.pth")
 
 seed_number = 10
 random.seed(seed_number)

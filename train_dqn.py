@@ -41,14 +41,14 @@ def load_data():
     return param_deepc
 
 if __name__ == "__main__":
-    seed_number = 25
+    seed_number = 42
     random.seed(seed_number)
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)
 
     rho = 0.1
-    num_episodes = 200
-    test_interval = 20 
+    num_episodes = 250
+    test_interval = 25 
 
     param_deepc = load_data()
     Tini = param_deepc[4]

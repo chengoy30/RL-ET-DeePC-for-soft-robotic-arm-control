@@ -40,13 +40,14 @@ def load_data():
     return param_deepc
 
 if __name__ == "__main__":
-    seed_number = 42
+    seed_number = 10
     random.seed(seed_number)
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)
 
-    num_episodes = 200
-    rho = 0.3
+    num_episodes = 250
+    rho = 0.1
+    test_interval = 42
 
     param_deepc = load_data()
     Tini = param_deepc[4]
@@ -87,7 +88,7 @@ if __name__ == "__main__":
     action_dim = env.action_space.n
     agent = PPO(state_dim, hidden_dim, action_dim, actor_lr, critic_lr, lmbda, epochs, eps, gamma, device)
 
-    return_list, action_1_ratio_list, best_test_reward = rl_utils.train_PPO_agent(env, agent, num_episodes, rho)
+    return_list, action_1_ratio_list, best_test_reward = rl_utils.train_PPO_agent(env, agent, num_episodes, rho, test_interval=test_interval)
 
     episodes_list = list(range(len(return_list)))
     plt.plot(episodes_list, return_list)

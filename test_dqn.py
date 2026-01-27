@@ -12,7 +12,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from Lib.SoftArm_lib import SoftArmSection
 
 save_dir = "./Saved_Models"
-model_path = os.path.join(save_dir, "dqn_softarm_1.0_2026-01-22_10-17-45_best.pth")
+model_path = os.path.join(save_dir, "dqn_softarm_0.3_2026-01-27_01-01-32_best.pth")
 
 seed_number = 0
 random.seed(seed_number)
