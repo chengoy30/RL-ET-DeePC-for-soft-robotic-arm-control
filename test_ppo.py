@@ -9,6 +9,7 @@ from Lib.utils import generate_circular_trajectory
 from train_ppo import load_data
 import matplotlib.pyplot as plt
 from Lib.rl_utils import test_PPO_agent
+from mpl_toolkits.mplot3d import Axes3D
 
 save_dir = "./Saved_Models"
 model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-01-27_10-40-39_best.pth")
@@ -76,6 +77,10 @@ y_target = test_y_target[0]
 
 ref_trajectory = y_desired[:, :len(y_actual)].T
 
+np.savez(f'./Data/ppo_test_data_rho_{rho}.npz',
+         obs_data=obs_data, action_data=action_data, reward_data=reward_data,
+         y_actual=y_actual, y_target=y_target, ref_trajectory=ref_trajectory)
+
 # calculate the tracking error MSE (Mean Squared Error of L2 norm)
 # MSE = (1/n) * Σ ||y_actual - y_ref||²
 err = y_actual - ref_trajectory
@@ -120,8 +125,8 @@ plt.show()
 fig2, axes2 = plt.subplots(2, 1, figsize=(12, 6))
 
 ax_action = axes2[0]
-ax_action.scatter(action_time_steps, action_data, color=['#e74c3c' if a == 1 else '#3498db' for a in action_data], 
-              alpha=0.7, edgecolor='black', linewidth=0.5)
+ax_action.bar(action_time_steps, action_data, color=['#e74c3c' if a == 1 else '#3498db' for a in action_data],
+              alpha=0.7, edgecolor='black', linewidth=0.5, width=0.3)
 ax_action.set_ylabel('Action', fontsize=12)
 ax_action.set_xlabel('Time Step', fontsize=12)
 ax_action.set_yticks([0, 1])
@@ -144,25 +149,34 @@ plt.tight_layout()
 plt.savefig('./Figure/ppo_action_results.png', dpi=150, bbox_inches='tight')
 plt.show()
 
-from mpl_toolkits.mplot3d import Axes3D
+fig3, (ax3d, ax2d) = plt.subplots(1, 2, figsize=(18, 8),
+                                   subplot_kw={'projection': '3d'})
 
-fig3 = plt.figure(figsize=(12, 8))
-ax3d = fig3.add_subplot(111, projection='3d')
-
-ax3d.plot(y_actual[-145:, 0], y_actual[-145:, 1], y_actual[-145:, 2], 
+ax3d.plot(y_actual[-145:, 0], y_actual[-145:, 1], y_actual[-145:, 2],
           label='real trajectory', color='#e74c3c', linewidth=2)
-
-ax3d.plot(ref_trajectory[:, 0], ref_trajectory[:, 1], ref_trajectory[:, 2], 
+ax3d.plot(ref_trajectory[:, 0], ref_trajectory[:, 1], ref_trajectory[:, 2],
           label='reference trajectory', color='#3498db', linestyle='--', linewidth=2, alpha=0.7)
-
 ax3d.set_xlabel('X (mm)', fontsize=11)
 ax3d.set_ylabel('Y (mm)', fontsize=11)
 ax3d.set_zlabel('Z (mm)', fontsize=11)
 ax3d.legend(loc='upper left', fontsize=10)
-
 ax3d.set_zlim(-95, -75)
-# ax3d.view_init(elev=90, azim=0)
-ax3d.view_init(elev=90, azim=0)  # view from top
+ax3d.view_init(elev=20, azim=225)
+ax3d.set_title('3D View', fontsize=13)
+
+ax2d.remove()
+ax2d = fig3.add_subplot(122)
+
+ax2d.plot(y_actual[-145:, 0], y_actual[-145:, 1],
+          label='real trajectory', color='#e74c3c', linewidth=2)
+ax2d.plot(ref_trajectory[:, 0], ref_trajectory[:, 1],
+          label='reference trajectory', color='#3498db', linestyle='--', linewidth=2, alpha=0.7)
+ax2d.set_xlabel('X (mm)', fontsize=11)
+ax2d.set_ylabel('Y (mm)', fontsize=11)
+ax2d.legend(loc='upper left', fontsize=10)
+ax2d.set_title('Top View (X-Y)', fontsize=13)
+ax2d.set_aspect('equal')
+ax2d.grid(True, alpha=0.3)
 
 plt.tight_layout()
 plt.savefig('./Figure/ppo_trajectory_3d.png', dpi=150, bbox_inches='tight')

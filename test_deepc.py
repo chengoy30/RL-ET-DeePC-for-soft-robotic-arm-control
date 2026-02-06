@@ -104,6 +104,9 @@ if __name__ == "__main__":
     y_array = np.array(y_list)
     y_desired_array = np.array(y_desired_list)
     
+    np.savez('./Data/deepc_test_data.npz',
+             y_actual=y_array, y_desired=y_desired_array, rewards=rewards_array)
+
     # calculate the tracking error MSE (Mean Squared Error of L2 norm)
     # MSE = (1/n) * Σ ||y_actual - y_ref||²
     err = y_array - y_desired_array	
@@ -159,34 +162,50 @@ if __name__ == "__main__":
     
     print("image saved to ./Figure/env_test_result.png")
     
-    fig_3d = plt.figure(figsize=(10, 8))
-    ax = fig_3d.add_subplot(111, projection='3d')
-    
-    ax.plot(y_array[:, 0], y_array[:, 1], y_array[:, 2], 
-            'b-', linewidth=1.5, label='Actual Trajectory')
-    
-    ax.plot(y_desired_array[:, 0], y_desired_array[:, 1], y_desired_array[:, 2], 
-            'r--', linewidth=1.5, label='Desired Trajectory')
-    
-    ax.scatter(y_array[0, 0], y_array[0, 1], y_array[0, 2], 
-               c='green', s=100, marker='o', label='Start (Actual)')
-    ax.scatter(y_array[-1, 0], y_array[-1, 1], y_array[-1, 2], 
-               c='blue', s=100, marker='s', label='End (Actual)')
-    ax.scatter(y_desired_array[0, 0], y_desired_array[0, 1], y_desired_array[0, 2], 
-               c='orange', s=100, marker='^', label='Start (Desired)')
-    
-    ax.set_xlabel('X (mm)')
-    ax.set_ylabel('Y (mm)')
-    ax.set_zlabel('Z (mm)')
-    ax.set_title('3D Trajectory Tracking')
-    ax.legend(loc='upper left')
+    fig_3d, (ax3d, ax2d) = plt.subplots(1, 2, figsize=(18, 8),
+                                         subplot_kw={'projection': '3d'})
 
-    ax.set_zlim(-85, -81)
-    
-    ax.view_init(elev=25, azim=45)
-    
+    ax3d.plot(y_array[:, 0], y_array[:, 1], y_array[:, 2],
+              'b-', linewidth=1.5, label='Actual Trajectory')
+    ax3d.plot(y_desired_array[:, 0], y_desired_array[:, 1], y_desired_array[:, 2],
+              'r--', linewidth=1.5, label='Desired Trajectory')
+    ax3d.scatter(y_array[0, 0], y_array[0, 1], y_array[0, 2],
+                 c='green', s=100, marker='o', label='Start (Actual)')
+    ax3d.scatter(y_array[-1, 0], y_array[-1, 1], y_array[-1, 2],
+                 c='blue', s=100, marker='s', label='End (Actual)')
+    ax3d.scatter(y_desired_array[0, 0], y_desired_array[0, 1], y_desired_array[0, 2],
+                 c='orange', s=100, marker='^', label='Start (Desired)')
+    ax3d.set_xlabel('X (mm)', fontsize=11)
+    ax3d.set_ylabel('Y (mm)', fontsize=11)
+    ax3d.set_zlabel('Z (mm)', fontsize=11)
+    ax3d.legend(loc='upper left', fontsize=10)
+    ax3d.set_zlim(-85, -81)
+    ax3d.view_init(elev=25, azim=225)
+    ax3d.set_title('3D View', fontsize=13)
+
+    # Remove the 3d projection for the right subplot and replace with 2d
+    ax2d.remove()
+    ax2d = fig_3d.add_subplot(122)
+
+    ax2d.plot(y_array[:, 0], y_array[:, 1],
+              'b-', linewidth=1.5, label='Actual Trajectory')
+    ax2d.plot(y_desired_array[:, 0], y_desired_array[:, 1],
+              'r--', linewidth=1.5, label='Desired Trajectory')
+    ax2d.scatter(y_array[0, 0], y_array[0, 1],
+                 c='green', s=100, marker='o', label='Start (Actual)')
+    ax2d.scatter(y_array[-1, 0], y_array[-1, 1],
+                 c='blue', s=100, marker='s', label='End (Actual)')
+    ax2d.scatter(y_desired_array[0, 0], y_desired_array[0, 1],
+                 c='orange', s=100, marker='^', label='Start (Desired)')
+    ax2d.set_xlabel('X (mm)', fontsize=11)
+    ax2d.set_ylabel('Y (mm)', fontsize=11)
+    ax2d.legend(loc='upper left', fontsize=10)
+    ax2d.set_title('Top View (X-Y)', fontsize=13)
+    ax2d.set_aspect('equal')
+    ax2d.grid(True, alpha=0.3)
+
     plt.tight_layout()
     plt.savefig('./Figure/env_test_result_3d.png', dpi=150)
     plt.show()
-    
+
     print("3D image saved to ./Figure/env_test_result_3d.png")
