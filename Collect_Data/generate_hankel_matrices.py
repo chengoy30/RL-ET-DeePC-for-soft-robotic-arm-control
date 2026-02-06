@@ -40,7 +40,7 @@ for i in range(num_steps):
         noise = np.random.normal(0, 0.002, 3)
         position_trajectory[i, :] = [x + noise[0], y + noise[1], -z + noise[2]]
     else:
-        print(f"warning: Forward kinematics solution failed at {i} time points.！")
+        print(f"warning: Forward kinematics solution failed at {i} time points!")
         if i > 0:
             position_trajectory[i, :] = position_trajectory[i-1, :]
         else:

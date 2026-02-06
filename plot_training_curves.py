@@ -81,7 +81,6 @@ def plot_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=
     plt.grid(True, alpha=0.3)
     plt.legend(frameon=True, loc='best', fontsize=10)
     plt.tight_layout()
-    plt.show()
     
     if save_path is None:
         rho_str = "_".join([str(r) for r in rho_list])
@@ -91,6 +90,7 @@ def plot_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=
         else:
             save_path = os.path.join("./Figure", f"returns_comparison_rho_{rho_str}.png")
     plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    plt.show()
     plt.close()
 
 def plot_mv_return_curves(save_dir, rho_list, algo_list, shade="minmax", window_size=9, save_path=None):
@@ -144,7 +144,6 @@ def plot_mv_return_curves(save_dir, rho_list, algo_list, shade="minmax", window_
     plt.grid(True, alpha=0.3)
     plt.legend(frameon=True, loc='best', fontsize=10)
     plt.tight_layout()
-    plt.show()
     
     if save_path is None:
         rho_str = "_".join([str(r) for r in rho_list])
@@ -154,6 +153,7 @@ def plot_mv_return_curves(save_dir, rho_list, algo_list, shade="minmax", window_
         else:
             save_path = os.path.join("./Figure", f"mv_returns_comparison_rho_{rho_str}.png")
     plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    plt.show()
     plt.close()
 
 def plot_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=None):
@@ -204,7 +204,6 @@ def plot_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax", sa
     plt.grid(True, alpha=0.3)
     plt.legend(frameon=True, loc='best', fontsize=10)
     plt.tight_layout()
-    plt.show()
     
     if save_path is None:
         rho_str = "_".join([str(r) for r in rho_list])
@@ -214,6 +213,7 @@ def plot_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax", sa
         else:
             save_path = os.path.join("./Figure", f"action_1_ratio_comparison_rho_{rho_str}.png")
     plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    plt.show()
     plt.close()
 
 def plot_mv_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax", window_size=9, save_path=None):
@@ -265,7 +265,6 @@ def plot_mv_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax",
     plt.grid(True, alpha=0.3)
     plt.legend(frameon=True, loc='best', fontsize=10)
     plt.tight_layout()
-    plt.show()
     
     if save_path is None:
         rho_str = "_".join([str(r) for r in rho_list])
@@ -275,6 +274,7 @@ def plot_mv_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax",
         else:
             save_path = os.path.join("./Figure", f"mv_action_1_ratio_comparison_rho_{rho_str}.png")
     plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    plt.show()
     plt.close()
 
 
