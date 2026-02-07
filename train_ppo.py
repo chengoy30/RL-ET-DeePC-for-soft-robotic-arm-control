@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     num_episodes = 250
     rho = 0.1
-    test_interval = 42
+    test_interval = 25
 
     param_deepc = load_data()
     Tini = param_deepc[4]

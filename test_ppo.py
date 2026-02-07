@@ -12,14 +12,16 @@ from Lib.rl_utils import test_PPO_agent
 from mpl_toolkits.mplot3d import Axes3D
 
 save_dir = "./Saved_Models"
-model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-01-27_10-40-39_best.pth")
+# model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-01-27_10-40-39_best.pth")
+# model_path = os.path.join(save_dir, "ppo_softarm_0.3_2026-01-27_00-31-15_best.pth")
+model_path = os.path.join(save_dir, "ppo_softarm_0.6_2026-01-27_12-12-33_best.pth")
 
 seed_number = 10
 random.seed(seed_number)
 np.random.seed(seed_number)
 torch.manual_seed(seed_number)
 
-rho = 0.1
+rho = 0.6
 
 param_deepc = load_data()
 Tini = param_deepc[4]
@@ -119,7 +121,7 @@ for i, (ax, label, color) in enumerate(zip(axes1, labels, colors)):
 axes1[2].set_xlabel('time step', fontsize=12)
 fig1.suptitle('PPO test - Observation (position) results', fontsize=14, fontweight='bold')
 plt.tight_layout()
-plt.savefig('./Figure/ppo_observation_results.png', dpi=150, bbox_inches='tight')
+plt.savefig(f'./Figure/ppo_observation_results_rho_{rho}.png', dpi=150, bbox_inches='tight')
 plt.show()
 
 fig2, axes2 = plt.subplots(2, 1, figsize=(12, 6))
@@ -146,7 +148,7 @@ wedges, texts, autotexts = ax_pie.pie(action_counts, explode=explode, labels=lab
                                        shadow=True, startangle=90)
 
 plt.tight_layout()
-plt.savefig('./Figure/ppo_action_results.png', dpi=150, bbox_inches='tight')
+plt.savefig(f'./Figure/ppo_action_results_rho_{rho}.png', dpi=150, bbox_inches='tight')
 plt.show()
 
 fig3, (ax3d, ax2d) = plt.subplots(1, 2, figsize=(18, 8),
@@ -179,5 +181,5 @@ ax2d.set_aspect('equal')
 ax2d.grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.savefig('./Figure/ppo_trajectory_3d.png', dpi=150, bbox_inches='tight')
+plt.savefig(f'./Figure/ppo_trajectory_3d_rho_{rho}.png', dpi=150, bbox_inches='tight')
 plt.show()

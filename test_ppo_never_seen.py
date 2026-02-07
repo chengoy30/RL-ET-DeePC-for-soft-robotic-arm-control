@@ -11,7 +11,9 @@ from Lib.rl_utils import test_PPO_agent
 from Lib.SoftArm_lib import constant_curvature
 
 save_dir = "./Saved_Models"
-model_path = os.path.join(save_dir, "ppo_softarm_0.3_2026-01-27_00-31-15_best.pth")
+model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-01-27_10-40-39_best.pth")
+# model_path = os.path.join(save_dir, "ppo_softarm_0.3_2026-01-27_00-31-15_best.pth")
+# model_path = os.path.join(save_dir, "ppo_softarm_0.6_2026-01-27_12-12-33_best.pth")
 
 def load_data():
     data = np.load("./Data/hankel_matrices.npz", allow_pickle=True)
@@ -42,7 +44,7 @@ if __name__ == "__main__":
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)
 
-    rho = 0.3
+    rho = 0.1
 
     param_deepc = load_data()
     Tini = param_deepc[4]
@@ -107,6 +109,10 @@ if __name__ == "__main__":
 
     ref_trajectory = y_desired[:, :len(y_actual)].T
 
+    np.savez(f'./Data/ppo_never_seen_test_data_rho_{rho}.npz',
+         obs_data=obs_data, action_data=action_data, reward_data=reward_data,
+         y_actual=y_actual, y_target=y_target, ref_trajectory=ref_trajectory)
+
     time_steps = np.arange(len(y_actual))
     action_time_steps = np.arange(len(action_data))
 
@@ -128,7 +134,7 @@ if __name__ == "__main__":
     axes1[2].set_xlabel('time step', fontsize=12)
     fig1.suptitle('PPO test - Observation (position) results', fontsize=14, fontweight='bold')
     plt.tight_layout()
-    plt.savefig('./Figure/ppo_never_seen_observation_results.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'./Figure/ppo_never_seen_observation_results_rho_{rho}.png', dpi=150, bbox_inches='tight')
     plt.show()
 
     print("observation results saved to: ppo_never_seen_observation_results.png")
@@ -136,7 +142,7 @@ if __name__ == "__main__":
     fig2, axes2 = plt.subplots(2, 1, figsize=(12, 6))
 
     ax_action = axes2[0]
-    ax_action.scatter(action_time_steps, action_data, color=['#e74c3c' if a == 1 else '#3498db' for a in action_data], 
+    ax_action.bar(action_time_steps, action_data, color=['#e74c3c' if a == 1 else '#3498db' for a in action_data], 
                 alpha=0.7, edgecolor='black', linewidth=0.5)
     ax_action.set_ylabel('Action', fontsize=12)
     ax_action.set_xlabel('Time Step', fontsize=12)
@@ -157,7 +163,7 @@ if __name__ == "__main__":
                                         shadow=True, startangle=90)
 
     plt.tight_layout()
-    plt.savefig('./Figure/ppo_never_seen_action_results.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'./Figure/ppo_never_seen_action_results_rho_{rho}.png', dpi=150, bbox_inches='tight')
     plt.show()
 
     print("action results saved to: ppo_never_seen_action_results.png")

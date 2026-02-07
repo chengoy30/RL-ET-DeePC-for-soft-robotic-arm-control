@@ -178,6 +178,119 @@ def test_PPO_agent(env, agent):
     tqdm.write(f"Episode 1: Total Reward = {sum(rewards):.3f}, Steps = {len(actions)}")
     return [np.array(observations)], [np.array(actions)], [np.array(rewards)], [np.array(y_actual)], [np.array(y_target)]
 
+def train_A2C_agent(env, agent, num_episodes, rho, test_interval=20, save_dir='./saved_models'):
+    return_list = []
+    action_1_ratio_list = []
+    best_test_reward = float('-inf')
+    for i in range(10):
+        with tqdm(total=int(num_episodes/10), desc='Iteration %d' % i) as pbar:
+            for i_episode in range(int(num_episodes/10)):
+                global_episode = i * int(num_episodes / 10) + i_episode + 1
+                episode_return = 0
+                total_action_count = 0
+                action_1_count = 0
+                transition_dict = {'states': [], 'actions': [], 'next_states': [], 'rewards': [], 'dones': []}
+                state, _ = env.reset()
+                done = False
+
+                # first step must call DeePC, and update state correctly
+                next_state, reward, terminated, truncated, _ = env.step(action=1)
+                state = next_state
+                episode_return += reward
+                action_1_count += 1
+                total_action_count += 1
+                done = terminated or truncated
+
+                while not done:
+                    action = agent.take_action(state)
+                    if env.k >= env.N - 1:
+                        action = 1
+                    total_action_count += 1
+                    if action == 1:
+                        action_1_count += 1
+                    next_state, reward, terminated, truncated, _ = env.step(action)
+                    done = terminated or truncated
+                    transition_dict['states'].append(state)
+                    transition_dict['actions'].append(action)
+                    transition_dict['next_states'].append(next_state)
+                    transition_dict['rewards'].append(reward)
+                    transition_dict['dones'].append(done)
+                    state = next_state
+                    episode_return += reward
+                return_list.append(episode_return)
+                action_1_ratio = action_1_count / total_action_count if total_action_count > 0 else 0
+                action_1_ratio_list.append(action_1_ratio)
+                agent.update(transition_dict)
+                pbar.update(1)
+
+                if (i_episode + 1) % 10 == 0:
+                    pbar.set_postfix({
+                        'episode': '%d' % (num_episodes / 10 * i + i_episode + 1),
+                        'return': '%.3f' % np.mean(return_list[-10:])
+                    })
+
+                if global_episode % test_interval == 0:
+                    tqdm.write(f"\n===== A2C testing in episode {global_episode} =====")
+                    test_obs, test_actions, test_rewards, _, _ = test_A2C_agent(env, agent)
+                    test_total_reward = sum(test_rewards[0])
+                    tqdm.write(f"test reward: {test_total_reward:.3f}, best reward: {best_test_reward:.3f}")
+
+                    if test_total_reward > best_test_reward:
+                        best_test_reward = test_total_reward
+                        current_time = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+                        best_model_path = os.path.join(save_dir, f"a2c_softarm_{rho}_{current_time}_best.pth")
+                        torch.save({
+                            'actor': agent.actor.state_dict(),
+                            'critic': agent.critic.state_dict()
+                        }, best_model_path)
+                        tqdm.write(f"new best model saved! reward: {best_test_reward:.3f}")
+                    tqdm.write("=" * 50)
+    return return_list, action_1_ratio_list, best_test_reward
+
+def test_A2C_agent(env, agent):
+    state, _ = env.reset()
+    done = False
+
+    observations = [state.copy()]
+    actions = []
+    rewards = []
+    y_actual = []
+    y_target = []
+
+    next_state, reward, terminated, truncated, _ = env.step(action=1)
+    actions.append(1)
+    rewards.append(reward)
+    observations.append(next_state.copy())
+    y_actual.append(env.y.flatten().copy())
+    current_target = env.y_desired[:, min(env.t-1, env.y_desired.shape[1]-1)]
+    y_target.append(current_target.flatten().copy())
+    state = next_state
+    done = terminated or truncated
+
+    while not done:
+        with torch.no_grad():
+            state_tensor = torch.tensor(np.array([state]), dtype=torch.float).to(agent.device)
+            probs = agent.actor(state_tensor)
+            action = probs.argmax().item()
+
+        if env.k >= env.N - 1:
+            action = 1
+
+        next_state, reward, terminated, truncated, _ = env.step(action)
+        done = terminated or truncated
+
+        observations.append(next_state.copy())
+        actions.append(action)
+        rewards.append(reward)
+        y_actual.append(env.y.flatten().copy())
+        current_target = env.y_desired[:, min(env.t-1, env.y_desired.shape[1]-1)]
+        y_target.append(current_target.flatten().copy())
+
+        state = next_state
+
+    tqdm.write(f"Episode 1: Total Reward = {sum(rewards):.3f}, Steps = {len(actions)}")
+    return [np.array(observations)], [np.array(actions)], [np.array(rewards)], [np.array(y_actual)], [np.array(y_target)]
+
 def test_DQN_agent(env, agent):
     state, _ = env.reset()
     done = False
