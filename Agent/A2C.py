@@ -31,7 +31,7 @@ class ValueNet(torch.nn.Module):
 class A2C:
     """Advantage Actor-Critic (A2C) with GAE and entropy bonus."""
     def __init__(self, state_dim, hidden_dim, action_dim, actor_lr, critic_lr,
-                 lmbda, gamma, entropy_coef, device):
+                 lmbda, gamma, entropy_coef, device, max_grad_norm=0.5):
 
         self.actor = PolicyNet(state_dim, hidden_dim, action_dim).to(device)
         self.critic = ValueNet(state_dim, hidden_dim).to(device)
@@ -42,6 +42,7 @@ class A2C:
         self.gamma = gamma
         self.lmbda = lmbda
         self.entropy_coef = entropy_coef
+        self.max_grad_norm = max_grad_norm  # gradient clipping threshold
         self.device = device
 
     def take_action(self, state):
@@ -69,6 +70,10 @@ class A2C:
         advantage = rl_utils.compute_advantage(self.gamma, self.lmbda,
                                                td_delta.cpu()).to(self.device)
 
+        # advantage normalization: reduce variance
+        if advantage.numel() > 1:
+            advantage = (advantage - advantage.mean()) / (advantage.std() + 1e-8)
+
         # calculate actor loss: policy gradient + entropy regularization
         probs = self.actor(states)
         log_probs = torch.log(probs.gather(1, actions))
@@ -82,6 +87,9 @@ class A2C:
         self.critic_optimizer.zero_grad()
         actor_loss.backward()
         critic_loss.backward()
+        # gradient clipping: prevent large policy updates
+        torch.nn.utils.clip_grad_norm_(self.actor.parameters(), self.max_grad_norm)
+        torch.nn.utils.clip_grad_norm_(self.critic.parameters(), self.max_grad_norm)
         self.actor_optimizer.step()
         self.critic_optimizer.step()
 

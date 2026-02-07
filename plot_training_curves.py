@@ -280,7 +280,7 @@ def plot_mv_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax",
 
 if __name__ == "__main__":
     save_dir = "./Saved_Training_Data"
-    plot_return_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo"], shade="minmax")
-    plot_mv_return_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo"], shade="minmax", window_size=25)
-    plot_action_1_ratio_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo"], shade="minmax")
-    plot_mv_action_1_ratio_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo"], shade="minmax", window_size=25)
+    plot_return_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo", "a2c"], shade="minmax")
+    plot_mv_return_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo", "a2c"], shade="minmax", window_size=25)
+    plot_action_1_ratio_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo", "a2c"], shade="minmax")
+    plot_mv_action_1_ratio_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo", "a2c"], shade="minmax", window_size=25)
