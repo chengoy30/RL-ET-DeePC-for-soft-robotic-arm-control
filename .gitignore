@@ -9,4 +9,7 @@ Saved_Models/*
 Saved_Training_Data/*
 !Saved_Training_Data/.gitkeep
 
+Saved_Testing_Data/*
+!Saved_Testing_Data/.gitkeep
+
 .DS_Store

@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     ref_trajectory = y_desired[:, :len(y_actual)].T
 
-    np.savez(f'./Data/ppo_never_seen_test_data_rho_{rho}.npz',
+    np.savez(f'./Saved_Testing_Data/ppo_never_seen_test_data_rho_{rho}.npz',
          obs_data=obs_data, action_data=action_data, reward_data=reward_data,
          y_actual=y_actual, y_target=y_target, ref_trajectory=ref_trajectory)
 

@@ -104,7 +104,7 @@ if __name__ == "__main__":
     y_array = np.array(y_list)
     y_desired_array = np.array(y_desired_list)
     
-    np.savez('./Data/deepc_test_data.npz',
+    np.savez('./Saved_Testing_Data/deepc_test_data.npz',
              y_actual=y_array, y_desired=y_desired_array, rewards=rewards_array)
 
     # calculate the tracking error MSE (Mean Squared Error of L2 norm)
