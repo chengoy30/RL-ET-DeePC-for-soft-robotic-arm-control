@@ -49,7 +49,7 @@ def plot_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=
             for p in paths:
                 data = np.load(p, allow_pickle=True)
                 return_list = np.asarray(data["return_list"], dtype=float).squeeze()
-                return_list = np.clip(return_list, -350, None)
+                return_list = np.clip(return_list, -400, None)
                 curves.append(return_list)
             
             min_len = min(len(c) for c in curves)
@@ -74,7 +74,7 @@ def plot_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=
             
             color_idx += 1
     
-    plt.ylim(-200, -20)
+    plt.ylim(-300, -40)
     plt.xlabel("Episodes", fontsize=12)
     plt.ylabel("Returns", fontsize=12)
     plt.title("Training Returns Comparison", fontsize=14)
@@ -111,7 +111,7 @@ def plot_mv_return_curves(save_dir, rho_list, algo_list, shade="minmax", window_
             for p in paths:
                 data = np.load(p, allow_pickle=True)
                 return_list = np.asarray(data["return_list"], dtype=float).squeeze()
-                return_list = np.clip(return_list, -350, None)
+                return_list = np.clip(return_list, -400, None)
                 mv_return_list = moving_average(return_list, window_size)
                 curves.append(mv_return_list)
             
@@ -137,7 +137,7 @@ def plot_mv_return_curves(save_dir, rho_list, algo_list, shade="minmax", window_
             
             color_idx += 1
     
-    plt.ylim(-200, -20)
+    plt.ylim(-300, -40)
     plt.xlabel("Episodes", fontsize=12)
     plt.ylabel("Returns", fontsize=12)
     plt.title("Training Moving Average Returns Comparison", fontsize=14)
@@ -280,7 +280,7 @@ def plot_mv_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax",
 
 if __name__ == "__main__":
     save_dir = "./Saved_Training_Data"
-    plot_return_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo", "a2c"], shade="minmax")
-    plot_mv_return_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo", "a2c"], shade="minmax", window_size=25)
-    plot_action_1_ratio_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo", "a2c"], shade="minmax")
-    plot_mv_action_1_ratio_curves(save_dir, rho_list=[0.1, 0.3, 0.6], algo_list=["dqn", "ppo", "a2c"], shade="minmax", window_size=25)
+    plot_return_curves(save_dir, rho_list=[0.1, 0.5, 1.0], algo_list=["dqn", "ppo", "a2c"], shade="minmax")
+    plot_mv_return_curves(save_dir, rho_list=[0.1, 0.5, 1.0], algo_list=["dqn", "ppo", "a2c"], shade="minmax", window_size=25)
+    plot_action_1_ratio_curves(save_dir, rho_list=[0.1, 0.5, 1.0], algo_list=["dqn", "ppo", "a2c"], shade="minmax")
+    plot_mv_action_1_ratio_curves(save_dir, rho_list=[0.1, 0.5, 1.0], algo_list=["dqn", "ppo", "a2c"], shade="minmax", window_size=25)

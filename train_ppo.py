@@ -40,13 +40,13 @@ def load_data():
     return param_deepc
 
 if __name__ == "__main__":
-    seed_number = 10
+    seed_number = 42
     random.seed(seed_number)
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)
 
     num_episodes = 250
-    rho = 0.1
+    rho = 1.0
     test_interval = 25
 
     param_deepc = load_data()

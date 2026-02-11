@@ -6,7 +6,7 @@ colors = ['#e74c3c', '#3498db', '#2ca02c']
 data_all = {}
 
 for rho in rhos:
-    d = np.load(f'./Data/ppo_never_seen_test_data_rho_{rho}.npz')
+    d = np.load(f'./Data/ppo_test_data_rho_{rho}.npz')
     data_all[rho] = d
 
 ref_trajectory = data_all[rhos[0]]['ref_trajectory']

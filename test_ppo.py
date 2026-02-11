@@ -21,7 +21,7 @@ random.seed(seed_number)
 np.random.seed(seed_number)
 torch.manual_seed(seed_number)
 
-rho = 0.6
+rho = 0.5
 
 param_deepc = load_data()
 Tini = param_deepc[4]

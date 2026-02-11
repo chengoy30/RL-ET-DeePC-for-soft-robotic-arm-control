@@ -11,9 +11,9 @@ from Lib.rl_utils import test_PPO_agent
 from Lib.SoftArm_lib import constant_curvature
 
 save_dir = "./Saved_Models"
-model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-01-27_10-40-39_best.pth")
-# model_path = os.path.join(save_dir, "ppo_softarm_0.3_2026-01-27_00-31-15_best.pth")
-# model_path = os.path.join(save_dir, "ppo_softarm_0.6_2026-01-27_12-12-33_best.pth")
+# model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-01-27_10-40-39_best.pth")
+# model_path = os.path.join(save_dir, "ppo_softarm_0.5_2026-02-11_12-21-45_best.pth")
+model_path = os.path.join(save_dir, "ppo_softarm_1.0_2026-02-11_15-35-33_best.pth")
 
 def load_data():
     data = np.load("./Data/hankel_matrices.npz", allow_pickle=True)
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)
 
-    rho = 0.1
+    rho = 1.0
 
     param_deepc = load_data()
     Tini = param_deepc[4]
@@ -58,19 +58,26 @@ if __name__ == "__main__":
         Kc=3.10
     )
 
-    total_steps = 360
+    total_steps = 200
     trajectory = np.zeros((total_steps, 3), dtype=float)
 
     for i in range(total_steps):
-        if i <= 120:
+        if i <= 40:
+            theta = np.deg2rad(15.0)
+            phi   = np.deg2rad(20.0)
+        elif i <= 80:
             theta = np.deg2rad(30.0)
-            phi   = np.deg2rad(0.0)
-        elif i <= 240:
+            phi   = np.deg2rad(40.0)
+        elif i <= 120:
             theta = np.deg2rad(45.0)
             phi   = np.deg2rad(60.0)
-        elif i <= 360:
-            theta = np.deg2rad(60.0)
-            phi   = np.deg2rad(75.0)
+        elif i <= 160:
+            theta = np.deg2rad(30.0)
+            phi   = np.deg2rad(40.0)
+        elif i <= 200:
+            theta = np.deg2rad(15.0)
+            phi   = np.deg2rad(20.0)
+        
 
         x_r, y_r, z_r = constant_curvature(theta, phi, 93.0)
         trajectory[i, :] = [x_r, y_r, -z_r]

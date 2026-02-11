@@ -46,7 +46,7 @@ if __name__ == "__main__":
     torch.manual_seed(seed_number)
 
     num_episodes = 250
-    rho = 0.1
+    rho = 1.0
     test_interval = 25
 
     param_deepc = load_data()
