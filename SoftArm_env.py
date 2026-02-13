@@ -71,7 +71,7 @@ class SoftArmEnv:
         self.arm_length_mm = 10.0 * self.arm_section.L
         self.Q_reward = 3.33 * np.eye(self.p) 
 
-        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self.p + 1,))
+        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(2 * self.p,))
         self.action_space = gym.spaces.Discrete(2)
         
         self._rng = np.random.default_rng(seed=None)
@@ -92,14 +92,16 @@ class SoftArmEnv:
         self.useq = np.zeros((self.m, self.N))
         self.yseq = np.zeros((self.p, self.N))
         self.t = 0
-        self.y = self.y_init.copy() 
+        self.y = self.y_init.copy()
         initial_target = self.y_desired[:, 0]
+        self.prev_error = (initial_target.flatten() - self.y.flatten()).copy()
         return self.getFeat(initial_target), {}
     
     def getFeat(self, current_target):
         error = current_target.flatten() - self.y.flatten()
-        error_norm = np.linalg.norm(error)
-        return np.append(error, error_norm)
+        delta_error = error - self.prev_error
+        self.prev_error = error.copy()
+        return np.concatenate([error, delta_error])
 
     def step(self, action):
         if action > 0:
