@@ -74,7 +74,6 @@ def plot_return_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=
             
             color_idx += 1
     
-    plt.ylim(-300, -40)
     plt.xlabel("Episodes", fontsize=12)
     plt.ylabel("Returns", fontsize=12)
     plt.title("Training Returns Comparison", fontsize=14)
@@ -137,7 +136,6 @@ def plot_mv_return_curves(save_dir, rho_list, algo_list, shade="minmax", window_
             
             color_idx += 1
     
-    plt.ylim(-300, -40)
     plt.xlabel("Episodes", fontsize=12)
     plt.ylabel("Returns", fontsize=12)
     plt.title("Training Moving Average Returns Comparison", fontsize=14)

@@ -37,7 +37,7 @@ for i in range(num_steps):
         theta = kappa_b * arm_section.L
         x, y, z = constant_curvature(theta, gamma_g, arm_section.L * 10.0)
         # noise = np.random.uniform(-0.002, 0.002, 3)
-        noise = np.random.normal(0, 0.002, 3)
+        noise = np.random.normal(0, 0.02, 3)
         position_trajectory[i, :] = [x + noise[0], y + noise[1], -z + noise[2]]
     else:
         print(f"warning: Forward kinematics solution failed at {i} time points!")

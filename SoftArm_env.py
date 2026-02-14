@@ -69,7 +69,7 @@ class SoftArmEnv:
         self.l_min = 0.70 * self.arm_section.L
         self.l_max = 1.15 * self.arm_section.L
         self.arm_length_mm = 10.0 * self.arm_section.L
-        self.Q_reward = np.eye(self.p)
+        self.Q_reward = 3.33 * np.eye(self.p)
 
         self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(2 * self.p,))
         self.action_space = gym.spaces.Discrete(2)
@@ -130,7 +130,7 @@ class SoftArmEnv:
         theta = kappa_b * self.arm_section.L  
         x, y, z = constant_curvature(theta, gamma_g_rad, self.arm_length_mm) 
         
-        noise = self._rng.normal(0, 0.002, (3, 1))
+        noise = self._rng.normal(0, 0.02, (3, 1))
         self.y = np.array([[x], [y], [-z]]) + noise
         
         self.uini = np.roll(self.uini, -1, axis=1)
