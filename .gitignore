@@ -13,3 +13,5 @@ Saved_Testing_Data/*
 !Saved_Testing_Data/.gitkeep
 
 .DS_Store
+
+.claude/*

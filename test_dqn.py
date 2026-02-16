@@ -12,14 +12,14 @@ from mpl_toolkits.mplot3d import Axes3D
 from Lib.SoftArm_lib import SoftArmSection
 
 save_dir = "./Saved_Models"
-model_path = os.path.join(save_dir, "dqn_softarm_0.6_2026-01-27_12-39-33_best.pth")
+model_path = os.path.join(save_dir, "dqn_softarm_1.0_2026-02-14_13-42-26_best.pth")
 
-seed_number = 0
+seed_number = 42
 random.seed(seed_number)
 np.random.seed(seed_number)
 torch.manual_seed(seed_number)
 
-rho = 0.6
+rho = 1.0
 
 param_deepc = load_data()
 Tini = param_deepc[4]

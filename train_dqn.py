@@ -41,7 +41,7 @@ def load_data():
     return param_deepc
 
 if __name__ == "__main__":
-    seed_number = 0
+    seed_number = 15
     random.seed(seed_number)
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)
