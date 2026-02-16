@@ -6,7 +6,7 @@ import torch
 import matplotlib.pyplot as plt
 import Lib.rl_utils as rl_utils
 from Lib.SoftArm_lib import SoftArmSection
-from SoftArm_env import SoftArmEnv
+from SoftArm_env_test import TimedSoftArmEnv
 import os
 from Lib.utils import generate_circular_trajectory
 import time
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
     y_desired = circular_trajectory.T
 
-    env = SoftArmEnv(param_deepc, arm_section, y_desired, rho)
+    env = TimedSoftArmEnv(param_deepc, arm_section, y_desired, rho)
     state, _ = env.reset(seed=seed_number)
 
     print("start testing the environment...")
@@ -99,6 +99,11 @@ if __name__ == "__main__":
     print(f"testing completed! total steps: {step_count}, total reward: {sum(rewards_list):.4f}")
     time_end = time.time()
     print(f"testing time: {time_end - time_start:.2f} seconds")
+
+    print(f"\nTotal DeePC decision time: {env.total_deepc_time:.4f} seconds")
+    print(f"DeePC solve calls: {env.deepc_call_count} / {len(env.deepc_times)} steps")
+    print(f"Average DeePC solve time: {env.total_deepc_time / max(env.deepc_call_count, 1):.4f} seconds")
+    print(f"Trigger rate: {env.deepc_call_count / len(env.deepc_times) * 100:.1f}%")
     
     rewards_array = np.array(rewards_list)
     y_array = np.array(y_list)
@@ -108,8 +113,8 @@ if __name__ == "__main__":
              y_actual=y_array, y_desired=y_desired_array, rewards=rewards_array)
 
     # calculate the tracking error MSE (Mean Squared Error of L2 norm)
-    # MSE = (1/n) * Σ ||y_actual - y_ref||²
-    err = y_array - y_desired_array	
+    # MSE = (1/n) * Σ ||y_actual - y_ref||² (last 144 steps only)
+    err = y_array[-144:] - y_desired_array[-144:]	
     mse_total = np.mean(np.sum(err**2, axis=1))   # mean(||e_i||^2)
     rmse_total = np.sqrt(mse_total)
     

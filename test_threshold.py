@@ -2,7 +2,7 @@ import random
 import numpy as np
 import torch
 from Lib.SoftArm_lib import SoftArmSection
-from SoftArm_env import SoftArmEnv
+from SoftArm_env_test import TimedSoftArmEnv
 from Lib.utils import generate_circular_trajectory
 import matplotlib.pyplot as plt
 
@@ -35,8 +35,8 @@ if __name__ == "__main__":
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)
 
-    rho = 0
-    threshold = 0.6
+    rho = 1.0
+    threshold = 0.455
 
     param_deepc = load_data()
     Tini = param_deepc[4]
@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     y_desired = circular_trajectory.T
 
-    env = SoftArmEnv(param_deepc, arm_section, y_desired, rho)
+    env = TimedSoftArmEnv(param_deepc, arm_section, y_desired, rho)
     state, _ = env.reset(seed=seed_number)
 
     actions = []
@@ -103,11 +103,16 @@ if __name__ == "__main__":
 
     print(f"total reward: {sum(reward_data):.4f}")
 
-    ref_trajectory = y_desired[:, :len(y_actual)].T  
+    print(f"\nTotal DeePC decision time: {env.total_deepc_time:.4f} seconds")
+    print(f"DeePC solve calls: {env.deepc_call_count} / {len(env.deepc_times)} steps")
+    print(f"Average DeePC solve time: {env.total_deepc_time / max(env.deepc_call_count, 1):.4f} seconds")
+    print(f"Trigger rate: {env.deepc_call_count / len(env.deepc_times) * 100:.1f}%")
+
+    ref_trajectory = y_desired[:, :len(y_actual)].T
 
     # calculate the tracking error MSE (Mean Squared Error of L2 norm)
-    # MSE = (1/n) * Σ ||y_actual - y_ref||²
-    err = y_actual - ref_trajectory
+    # MSE = (1/n) * Σ ||y_actual - y_ref||² (last 144 steps only)
+    err = y_actual[-144:] - ref_trajectory[-144:]
     mse_total = np.mean(np.sum(err**2, axis=1))
     rmse_total = np.sqrt(mse_total)
 

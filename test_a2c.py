@@ -3,7 +3,7 @@ import torch
 import random
 import numpy as np
 from Agent.A2C import A2C
-from SoftArm_env import SoftArmEnv
+from SoftArm_env_test import TimedSoftArmEnv
 from Lib.SoftArm_lib import SoftArmSection
 from Lib.utils import generate_circular_trajectory
 from train_a2c import load_data
@@ -12,7 +12,9 @@ from Lib.rl_utils import test_A2C_agent
 from mpl_toolkits.mplot3d import Axes3D
 
 save_dir = "./Saved_Models"
-model_path = os.path.join(save_dir, "a2c_softarm_0.1_2026-02-06_17-34-03_best.pth")  
+model_path = os.path.join(save_dir, "a2c_softarm_0.1_2026-02-15_12-04-16_best.pth")  
+# model_path = os.path.join(save_dir, "a2c_softarm_0.5_2026-02-15_15-45-02_best.pth")  
+# model_path = os.path.join(save_dir, "a2c_softarm_1.0_2026-02-15_16-00-00_best.pth")  
 
 seed_number = 10
 random.seed(seed_number)
@@ -44,7 +46,7 @@ circular_trajectory = generate_circular_trajectory(
 
 y_desired = circular_trajectory.T
 
-env = SoftArmEnv(param_deepc, arm_section, y_desired, rho)
+env = TimedSoftArmEnv(param_deepc, arm_section, y_desired, rho)
 state, _ = env.reset(seed=seed_number)
 state_dim = env.observation_space.shape[0]
 action_dim = env.action_space.n
@@ -64,6 +66,11 @@ agent.load_model(model_path)
 print("\n===== start testing =====")
 test_observations, test_actions, test_rewards, test_y_actual, test_y_target = test_A2C_agent(env, agent)
 
+print(f"\nTotal DeePC decision time: {env.total_deepc_time:.4f} seconds")
+print(f"DeePC solve calls: {env.deepc_call_count} / {len(env.deepc_times)} steps")
+print(f"Average DeePC solve time: {env.total_deepc_time / max(env.deepc_call_count, 1):.4f} seconds")
+print(f"Trigger rate: {env.deepc_call_count / len(env.deepc_times) * 100:.1f}%")
+
 obs_data = test_observations[0]
 action_data = test_actions[0]
 reward_data = test_rewards[0]
@@ -75,11 +82,12 @@ ref_trajectory = y_desired[:, :len(y_actual)].T
 
 np.savez(f'./Saved_Testing_Data/a2c_test_data_rho_{rho}.npz',
          obs_data=obs_data, action_data=action_data, reward_data=reward_data,
-         y_actual=y_actual, y_target=y_target, ref_trajectory=ref_trajectory)
+         y_actual=y_actual, y_target=y_target, ref_trajectory=ref_trajectory,
+         deepc_times=np.array(env.deepc_times))
 
 # calculate the tracking error MSE (Mean Squared Error of L2 norm)
-# MSE = (1/n) * Σ ||y_actual - y_ref||²
-err = y_actual - ref_trajectory
+# MSE = (1/n) * Σ ||y_actual - y_ref||² (last 144 steps only)
+err = y_actual[-144:] - ref_trajectory[-144:]
 mse_total = np.mean(np.sum(err**2, axis=1))
 rmse_total = np.sqrt(mse_total)
 
