@@ -40,13 +40,13 @@ def load_data():
     return param_deepc
 
 if __name__ == "__main__":
-    seed_number = 40
+    seed_number = 0
     random.seed(seed_number)
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)
 
     num_episodes = 250
-    rho = 1.0
+    rho = 0.5
     test_interval = 25
 
     param_deepc = load_data()
@@ -80,14 +80,21 @@ if __name__ == "__main__":
     hidden_dim = 128
     gamma = 0.98
     lmbda = 0.95
-    entropy_coef = 0.01
+    entropy_coef = 0
     device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
 
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
     agent = A2C(state_dim, hidden_dim, action_dim, actor_lr, critic_lr, lmbda, gamma, entropy_coef, device)
 
-    return_list, action_1_ratio_list, best_test_reward = rl_utils.train_A2C_agent(env, agent, num_episodes, rho, test_interval=test_interval)
+    return_list, action_1_ratio_list, best_test_reward = rl_utils.train_A2C_agent(
+        env,
+        agent,
+        num_episodes,
+        rho,
+        test_interval=test_interval,
+        save_dir=save_dir
+    )
 
     episodes_list = list(range(len(return_list)))
     plt.plot(episodes_list, return_list)

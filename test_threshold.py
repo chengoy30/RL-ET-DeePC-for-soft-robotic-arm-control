@@ -36,7 +36,7 @@ if __name__ == "__main__":
     torch.manual_seed(seed_number)
 
     rho = 1.0
-    threshold = 0.455
+    threshold = 0.30
 
     param_deepc = load_data()
     Tini = param_deepc[4]

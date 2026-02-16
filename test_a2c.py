@@ -13,10 +13,10 @@ from mpl_toolkits.mplot3d import Axes3D
 
 save_dir = "./Saved_Models"
 model_path = os.path.join(save_dir, "a2c_softarm_0.1_2026-02-15_12-04-16_best.pth")  
-# model_path = os.path.join(save_dir, "a2c_softarm_0.5_2026-02-15_15-45-02_best.pth")  
-# model_path = os.path.join(save_dir, "a2c_softarm_1.0_2026-02-15_16-00-00_best.pth")  
+# model_path = os.path.join(save_dir, "a2c_softarm_0.5_2026-02-15_13-27-27_best.pth")  
+# model_path = os.path.join(save_dir, "a2c_softarm_1.0_2026-02-15_15-03-12_best.pth")  
 
-seed_number = 10
+seed_number = 0
 random.seed(seed_number)
 np.random.seed(seed_number)
 torch.manual_seed(seed_number)
@@ -63,8 +63,9 @@ agent = A2C(state_dim, hidden_dim, action_dim, actor_lr, critic_lr, lmbda, gamma
 
 agent.load_model(model_path)
 
-print("\n===== start testing =====")
-test_observations, test_actions, test_rewards, test_y_actual, test_y_target = test_A2C_agent(env, agent)
+temperature = 0.5
+print(f"\n===== start testing (temperature={temperature}) =====")
+test_observations, test_actions, test_rewards, test_y_actual, test_y_target = test_A2C_agent(env, agent, temperature=temperature)
 
 print(f"\nTotal DeePC decision time: {env.total_deepc_time:.4f} seconds")
 print(f"DeePC solve calls: {env.deepc_call_count} / {len(env.deepc_times)} steps")

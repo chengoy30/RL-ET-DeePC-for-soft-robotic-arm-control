@@ -12,16 +12,16 @@ from Lib.rl_utils import test_PPO_agent
 from mpl_toolkits.mplot3d import Axes3D
 
 save_dir = "./Saved_Models"
-model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-02-15_12-13-35_best.pth")
+# model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-02-15_12-13-35_best.pth")
 # model_path = os.path.join(save_dir, "ppo_softarm_0.5_2026-02-15_13-23-56_best.pth")
-# model_path = os.path.join(save_dir, "ppo_softarm_1.0_2026-02-15_14-52-17_best.pth")
+model_path = os.path.join(save_dir, "ppo_softarm_1.0_2026-02-15_14-52-17_best.pth")
 
-seed_number = 0
+seed_number = 42
 random.seed(seed_number)
 np.random.seed(seed_number)
 torch.manual_seed(seed_number)
 
-rho = 0.1
+rho = 1.0
 
 param_deepc = load_data()
 Tini = param_deepc[4]

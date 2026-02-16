@@ -11,9 +11,9 @@ from Lib.rl_utils import test_PPO_agent
 from Lib.SoftArm_lib import constant_curvature
 
 save_dir = "./Saved_Models"
-# model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-01-27_10-40-39_best.pth")
-# model_path = os.path.join(save_dir, "ppo_softarm_0.5_2026-02-11_12-21-45_best.pth")
-model_path = os.path.join(save_dir, "ppo_softarm_1.0_2026-02-11_15-35-33_best.pth")
+# model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-02-15_12-13-35_best.pth")
+# model_path = os.path.join(save_dir, "ppo_softarm_0.5_2026-02-15_13-23-56_best.pth")
+model_path = os.path.join(save_dir, "ppo_softarm_1.0_2026-02-15_14-52-17_best.pth")
 
 def load_data():
     data = np.load("./Data/hankel_matrices.npz", allow_pickle=True)
@@ -39,7 +39,7 @@ def load_data():
     return param_deepc
 
 if __name__ == "__main__":
-    seed_number = 0
+    seed_number = 40
     random.seed(seed_number)
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)

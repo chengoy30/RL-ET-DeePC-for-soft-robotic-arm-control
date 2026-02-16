@@ -25,8 +25,8 @@ for rho in rhos:
 
 ref_trajectory = data_all[rhos[0]]['ref_trajectory']
 
-fig, axes = plt.subplots(4, 1, figsize=(3.5, 4.5), sharex=True,
-                         gridspec_kw={'height_ratios': [1.5, 0.5, 0.5, 0.5]})
+fig, axes = plt.subplots(4, 1, figsize=(3.5, 3.5), sharex=True,
+                         gridspec_kw={'height_ratios': [2, 1, 1, 1]})
 
 # --- Top subplot: per-step tracking RMSE for each rho ---
 ax = axes[0]

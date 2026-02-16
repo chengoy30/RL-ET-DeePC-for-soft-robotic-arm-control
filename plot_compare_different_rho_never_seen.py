@@ -1,5 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+
+# IEEE single-column width: 3.5 in
+matplotlib.rcParams.update({
+    'font.family': 'serif',
+    'font.serif': ['Times New Roman'],
+    'font.size': 8,
+    'axes.labelsize': 8,
+    'axes.titlesize': 8,
+    'xtick.labelsize': 7,
+    'ytick.labelsize': 7,
+    'legend.fontsize': 7,
+    'lines.linewidth': 1.0,
+})
 
 def position_to_angle(x, y, z):
     # Handle special case when arm is straight (x=0, y=0)
@@ -41,22 +55,22 @@ for rho in rhos:
     angles = np.array([position_to_angle(x, y, z) for x, y, z in y_actual])
     angles_all[rho] = angles
 
-fig, axes = plt.subplots(5, 1, figsize=(12, 12), sharex=True,
+fig, axes = plt.subplots(5, 1, figsize=(3.5, 4.9), sharex=True,
                          gridspec_kw={'height_ratios': [2, 2, 1, 1, 1]})
 
 # --- Top 2 subplots: tracking trajectory for phi_b (bending angle) and gamma_r (bending direction) ---
-angle_labels = ['φ_b (Bending Angle)', 'γ_r (Bending Direction)']
+angle_labels = [r'$\phi_b$ (Bending Angle)', r'$\gamma_r$ (Bending Direction)']
 angle_units = ['rad', 'rad']
 ref_angle_data = [ref_theta, ref_phi]
 
 for i in range(2):
     ax = axes[i]
-    ax.plot(ref_angle_data[i], color='black', linewidth=2, label='Reference')
+    ax.plot(ref_angle_data[i], color='black', label='Reference')
     for rho, color in zip(rhos, colors):
         angle_actual = angles_all[rho][:, i]
-        ax.plot(angle_actual, color=color, linewidth=1.5, label=f'ρ={rho}')
-    ax.set_ylabel(f'{angle_labels[i]} ({angle_units[i]})', fontsize=11)
-    ax.legend(loc='upper right', fontsize=9)
+        ax.plot(angle_actual, color=color, label=f'ρ={rho}')
+    ax.set_ylabel(f'{angle_labels[i]} ({angle_units[i]})')
+    ax.legend(loc='upper right')
     ax.grid(True, alpha=0.3)
 
 # --- Bottom 3 subplots: trigger (action) for each rho ---
@@ -65,16 +79,17 @@ for j, (rho, color) in enumerate(zip(rhos, colors)):
     action_data = data_all[rho]['action_data']
     time_steps = np.arange(len(action_data))
     ax.bar(time_steps, action_data, color=color, alpha=0.8, width=0.5)
-    ax.set_ylabel('Trigger', fontsize=11)
+    ax.set_ylabel('Trigger')
     ax.set_yticks([0, 1])
     ax.set_ylim(-0.1, 1.3)
     ax.text(0.98, 0.85, f'ρ={rho}', transform=ax.transAxes,
-            fontsize=10, ha='right', va='top',
+            ha='right', va='top',
             bbox=dict(boxstyle='round,pad=0.3', facecolor=color, alpha=0.2))
     ax.grid(True, alpha=0.3, axis='y')
 
-axes[-1].set_xlabel('Step, k', fontsize=12)
+axes[-1].set_xlabel('Step')
 
 plt.tight_layout()
-plt.savefig('./Figure/ppo_angle_tracking_and_trigger_never_seen.png', dpi=150, bbox_inches='tight')
+plt.savefig('./Figure/ppo_angle_tracking_and_trigger_never_seen.png', dpi=300, bbox_inches='tight')
+plt.savefig('./Figure/ppo_angle_tracking_and_trigger_never_seen.pdf', bbox_inches='tight')
 plt.show()

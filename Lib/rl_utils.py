@@ -247,7 +247,7 @@ def train_A2C_agent(env, agent, num_episodes, rho, test_interval=20, save_dir='.
                     tqdm.write("=" * 50)
     return return_list, action_1_ratio_list, best_test_reward
 
-def test_A2C_agent(env, agent):
+def test_A2C_agent(env, agent, temperature=1.0):
     state, _ = env.reset()
     done = False
 
@@ -270,8 +270,11 @@ def test_A2C_agent(env, agent):
     while not done:
         with torch.no_grad():
             state_tensor = torch.tensor(np.array([state]), dtype=torch.float).to(agent.device)
-            probs = agent.actor(state_tensor)
-            action = probs.argmax().item()
+            x = torch.relu(agent.actor.fc1(state_tensor))
+            logits = agent.actor.fc2(x)
+            probs = torch.softmax(logits / temperature, dim=1)
+            action_dist = torch.distributions.Categorical(probs)
+            action = action_dist.sample().item()
 
         if env.k >= env.N - 1:
             action = 1
