@@ -34,7 +34,8 @@ for rho, color in zip(rhos, colors):
     y_actual = data_all[rho]['y_actual']
     rmse_per_step = np.sqrt(np.mean((y_actual - ref_trajectory) ** 2, axis=1))
     ax.plot(rmse_per_step, color=color, label=f'ρ={rho}')
-ax.set_ylabel('RMSE of Tracking Error (mm)')
+ax.set_ylim(0, 1)
+ax.set_ylabel('Tracking Error (mm)')
 ax.legend(loc='upper right')
 ax.grid(True, alpha=0.3)
 
@@ -52,7 +53,7 @@ for j, (rho, color) in enumerate(zip(rhos, colors)):
             bbox=dict(boxstyle='round,pad=0.3', facecolor=color, alpha=0.2))
     ax.grid(True, alpha=0.3, axis='y')
 
-axes[-1].set_xlabel('Step')
+axes[-1].set_xlabel('Time Step')
 
 plt.tight_layout()
 plt.savefig('./Figure/ppo_tracking_error_and_trigger.png', dpi=300, bbox_inches='tight')

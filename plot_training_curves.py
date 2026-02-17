@@ -328,14 +328,26 @@ def plot_return_and_trigger_ratio_curves(save_dir, rho_list, algo_list, shade="m
                 ax.set_ylabel(ylabel)
                 ax.grid(True, alpha=0.3)
 
-    ax1.set_ylim(-400, -100)
-    ax2.set_ylim(0, 1)
+    ax1.set_ylim(-350, -100)
+    ax2.set_ylim(0, 1.1)
+    ax2.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
     
     handles, labels = ax1.get_legend_handles_labels()
     fig.tight_layout()
-    fig.subplots_adjust(bottom=0.38)
-    fig.legend(handles, labels, frameon=True, loc='lower center',
-               bbox_to_anchor=(0.5, -0.15), ncol=len(rho_list), columnspacing=0.6)
+    fig.subplots_adjust(top=0.75)
+
+    fig.legend(
+    handles, labels,
+    frameon=True,
+    loc='upper center', bbox_to_anchor=(0.5, 1.0),
+    ncol=len(rho_list),
+    labelspacing=0.15,
+    borderpad=0.2,
+    handletextpad=0.2,
+    columnspacing=0.4,
+    handlelength=1.0,
+    fontsize=6,
+)
 
     if save_path is None:
         rho_str = "_".join([str(r) for r in rho_list])
