@@ -80,7 +80,7 @@ if __name__ == "__main__":
     hidden_dim = 128
     gamma = 0.98
     lmbda = 0.95
-    entropy_coef = 0
+    entropy_coef = 0.01
     device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
 
     state_dim = env.observation_space.shape[0]

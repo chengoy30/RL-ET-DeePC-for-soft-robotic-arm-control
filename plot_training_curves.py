@@ -282,7 +282,7 @@ def plot_mv_action_1_ratio_curves(save_dir, rho_list, algo_list, shade="minmax",
 
 
 def plot_return_and_trigger_ratio_curves(save_dir, rho_list, algo_list, shade="minmax", save_path=None):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(3.5, 1.8), dpi=300)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(3.5, 3.5), dpi=300)
 
     for algo in algo_list:
         for rho_idx, rho in enumerate(rho_list):
@@ -334,7 +334,7 @@ def plot_return_and_trigger_ratio_curves(save_dir, rho_list, algo_list, shade="m
     
     handles, labels = ax1.get_legend_handles_labels()
     fig.tight_layout()
-    fig.subplots_adjust(top=0.75)
+    fig.subplots_adjust(top=0.86)
 
     fig.legend(
     handles, labels,

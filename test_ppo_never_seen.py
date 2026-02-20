@@ -12,8 +12,8 @@ from Lib.SoftArm_lib import constant_curvature
 
 save_dir = "./Saved_Models"
 # model_path = os.path.join(save_dir, "ppo_softarm_0.1_2026-02-15_12-13-35_best.pth")
-model_path = os.path.join(save_dir, "ppo_softarm_0.5_2026-02-16_13-12-08_best.pth")
-# model_path = os.path.join(save_dir, "ppo_softarm_1.0_2026-02-16_12-22-06_best.pth")
+# model_path = os.path.join(save_dir, "ppo_softarm_0.5_2026-02-16_13-12-08_best.pth")
+model_path = os.path.join(save_dir, "ppo_softarm_1.0_2026-02-16_12-22-06_best.pth")
 
 def load_data():
     data = np.load("./Data/hankel_matrices.npz", allow_pickle=True)
@@ -39,12 +39,12 @@ def load_data():
     return param_deepc
 
 if __name__ == "__main__":
-    seed_number = 20
+    seed_number = 42
     random.seed(seed_number)
     np.random.seed(seed_number)
     torch.manual_seed(seed_number)
 
-    rho = 0.5
+    rho = 1.0
 
     param_deepc = load_data()
     Tini = param_deepc[4]

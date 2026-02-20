@@ -131,6 +131,7 @@ class SoftArmEnv:
         x, y, z = constant_curvature(theta, gamma_g_rad, self.arm_length_mm) 
         
         noise = self._rng.normal(0, 0.02, (3, 1))
+        # noise = self._rng.uniform(-0.02, 0.02, (3, 1))
         self.y = np.array([[x], [y], [-z]]) + noise
         
         self.uini = np.roll(self.uini, -1, axis=1)
