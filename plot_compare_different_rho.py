@@ -16,6 +16,9 @@ matplotlib.rcParams.update({
 
 rhos = [0.1, 0.5, 1.0]
 colors = ['#e74c3c', '#3498db', '#2ca02c']
+linewidth_plot = 0.8   
+linewidth_bar = 0.2   
+
 data_all = {}
 
 for rho in rhos:
@@ -31,7 +34,7 @@ ax = axes[0]
 for rho, color in zip(rhos, colors):
     y_actual = data_all[rho]['y_actual']
     rmse_per_step = np.sqrt(np.mean((y_actual - ref_trajectory) ** 2, axis=1))
-    ax.plot(rmse_per_step, color=color, label=f'ρ={rho}')
+    ax.plot(rmse_per_step, color=color, label=f'ρ={rho}', linewidth=linewidth_plot)
 ax.set_ylim(0, 1)
 ax.set_ylabel('Tracking Error (mm)')
 ax.legend(loc='upper right', borderpad=0.3, labelspacing=0.2,
@@ -42,7 +45,8 @@ for j, (rho, color) in enumerate(zip(rhos, colors)):
     ax = axes[1 + j]
     action_data = data_all[rho]['action_data']
     time_steps = np.arange(len(action_data))
-    ax.bar(time_steps, action_data, color=color, alpha=0.8, width=0.5)
+    ax.bar(time_steps, action_data, color=color, alpha=0.8, width=0.5,
+           edgecolor=color, linewidth=linewidth_bar)
     ax.set_ylabel('Trigger')
     ax.set_yticks([0, 1])
     ax.set_ylim(-0.1, 1.3)
