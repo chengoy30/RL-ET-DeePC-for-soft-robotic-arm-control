@@ -1,1 +1,1 @@
-# RL-based-eDeePC-for-soft-robotic-arm-control
+# RL-ET-DeePC-for-soft-robotic-arm-control
