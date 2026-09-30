@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/framework.png" width="850">
+  <img src="Figure/Framework_v1.png" width="850">
 </p>
 
 <p align="center">
